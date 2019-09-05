@@ -1,6 +1,6 @@
-9cc4dbbf0d6415558f9d46913ff1d8bf *DESCRIPTION
+9a6cde268e65de7bd263cf31f2115ee3 *DESCRIPTION
 4b56498074aad30d8febaa17e5f5f801 *NAMESPACE
-93a46027fcbbd998a9daf15288dd70fe *NEWS.md
+08e25295dc8909369739db3fe4ba4db5 *NEWS.md
 1dabcc0ab71a0f2e9102e64987956927 *R/modelStudio.R
 b139b966f3787024288570741fd2548b *R/modelStudioOptions.R
 c734224e51d725eace42243162b9a53f *R/prepare.R
@@ -16,11 +16,11 @@ e44327bd3dd529cb1bf526f2ae8e534e *inst/d3js/modelStudio.css
 69ddfad7d011a7486ec2263c41362d16 *inst/d3js/myTools.js
 c201624a5f8fc8de55d2571cb16eda76 *inst/doc/vignette_modelStudio.R
 212cd256ce5e844f67f3ef3df63938b3 *inst/doc/vignette_modelStudio.Rmd
-5ca5845321649b24f7c4befa31051042 *inst/doc/vignette_modelStudio.html
+08c5ecc117c41c57402acb36d1ff93e3 *inst/doc/vignette_modelStudio.html
 e83f99190ca668fed6714d16b2863c21 *man/modelStudio.Rd
 a842cc20388ddfecf4ebe34399adf9cc *man/modelStudioOptions.Rd
-c95aaa742306f9aa64cc6c740f5f36fb *tests/testthat.R
-db09918252f5aa79f0986136080d32bb *tests/testthat/test_modelStudio.R
-596585f60529c1661fdf850efb69d863 *tests/testthat/test_modelStudioOptions.R
-eb3cff79bd162747f9f90a60482a3277 *tests/testthat/test_objects.R
+fa9b8278cfbbcff82122ef22aa7475f9 *tests/testthat.R
+a2fbf958cd94aec0c75a4a651ae39eed *tests/testthat/test_modelStudio.R
+4cd3056693f716ab0e369d4cfb8cb33e *tests/testthat/test_modelStudioOptions.R
+888aed2daed054633b2c473a5919c548 *tests/testthat/test_objects.R
 212cd256ce5e844f67f3ef3df63938b3 *vignettes/vignette_modelStudio.Rmd
