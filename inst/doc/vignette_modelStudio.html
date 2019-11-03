@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hubert Baniecki" />
 
-<meta name="date" content="2019-09-04" />
+<meta name="date" content="2019-11-03" />
 
 <title>modelStudio - perks and features</title>
 
@@ -303,7 +303,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">modelStudio - perks and features</h1>
 <h4 class="author">Hubert Baniecki</h4>
-<h4 class="date">2019-09-04</h4>
+<h4 class="date">2019-11-03</h4>
 
 
 
@@ -400,7 +400,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <h2>modelStudio parameters</h2>
 <div id="local-explanations" class="section level3">
 <h3>local explanations</h3>
-<p>You can pass data points to <code>new_observation</code> parameter for local explanations such as Break Down, Shapley Values and Ceteris Paribus Profiles.</p>
+<p>You can pass data points to <code>new_observation</code> parameter for local explanations such as Break Down, SHAP Values and Ceteris Paribus Profiles.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">new_observations &lt;-<span class="st"> </span>test[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>,]</a>
 <a class="sourceLine" id="cb3-2" title="2"><span class="kw">rownames</span>(new_observations) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;John Snow&quot;</span>, <span class="st">&quot;Arya Stark&quot;</span>, <span class="st">&quot;Samwell Tarly&quot;</span>)</a>
 <a class="sourceLine" id="cb3-3" title="3"></a>
@@ -426,7 +426,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 </div>
 <div id="more-calculations-means-more-time" class="section level3">
 <h3>more calculations means more time</h3>
-<p><code>N</code> is a number of observations used for calculation of partial dependency profiles. <code>B</code> is a number of random paths used for calculation of shapley values. You can decrease <code>N</code> and <code>B</code> parameters to lower computation time or increase them to get more accurate empirical results.</p>
+<p><code>N</code> is a number of observations used for calculation of partial dependency profiles. <code>B</code> is a number of random paths used for calculation of SHAP values. You can decrease <code>N</code> and <code>B</code> parameters to lower computation time or increase them to get more accurate empirical results.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">modelStudio</span>(explainer, <span class="dt">new_observation =</span> test[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>,], <span class="dt">N =</span> <span class="dv">100</span>, <span class="dt">B =</span> <span class="dv">10</span>)</a>
 <a class="sourceLine" id="cb6-2" title="2"></a>
 <a class="sourceLine" id="cb6-3" title="3"><span class="kw">modelStudio</span>(explainer, <span class="dt">new_observation =</span> test[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>,], <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">B =</span> <span class="dv">50</span>)</a></code></pre></div>
@@ -526,6 +526,15 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb12-19" title="19">            <span class="dt">new_observation =</span> titanic_test[<span class="dv">1</span><span class="op">:</span><span class="dv">4</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">17</span>],</a>
 <a class="sourceLine" id="cb12-20" title="20">            <span class="dt">N =</span> <span class="dv">100</span>, <span class="dt">B =</span> <span class="dv">10</span>, <span class="dt">options =</span> <span class="kw">modelStudioOptions</span>(<span class="dt">margin_left =</span> <span class="dv">160</span>))</a></code></pre></div>
 <p><code>modelStudio</code> should work with any <code>explainer</code> class object. Find more about making those <a href="https://modeloriented.github.io/DALEXtra/reference/">here</a>.</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<ul>
+<li>Wrapper for the function can be found in <a href="https://modeloriented.github.io/DALEX/">DALEX</a></li>
+<li>Feature Importance, Ceteris Paribus, Partial Dependency and Accumulated Dependency plots are implemented in <a href="https://modeloriented.github.io/ingredients/">ingredients</a></li>
+<li>Break Down and SHAP Values plots are implemented in <a href="https://modeloriented.github.io/iBreakDown/">iBreakDown</a></li>
+<li>Python wrappers and more can be found in <a href="https://modeloriented.github.io/DALEXtra/">DALEXtra</a></li>
+</ul>
 </div>
 
 

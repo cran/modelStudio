@@ -2,22 +2,22 @@
 % Please edit documentation in R/modelStudioOptions.R
 \name{modelStudioOptions}
 \alias{modelStudioOptions}
-\title{Get modified options for modelStudio}
+\title{Modifiy options and pass them to modelStudio}
 \usage{
 modelStudioOptions(...)
 }
 \arguments{
-\item{...}{options to change, \code{option_name = value}.}
+\item{...}{Options to change, \code{option_name = value}.}
 }
 \value{
-\code{list} of options for modelStudio
+\code{list} of options for \code{modelStudio}.
 
 \subsection{Main options:}{
 \describe{
 \item{scale_plot}{\code{TRUE} Makes every plot the same height, ignores \code{bar_width}.}
-\item{show_subtitle}{\code{TRUE} Should subtitle be displayed?}
+\item{show_subtitle}{\code{TRUE} Should the subtitle be displayed?}
 \item{subtitle}{\code{label} parameter from \code{explainer}.}
-\item{margin_*}{plot margins. Change \code{margin_left} for longer/shorter axis labels.}
+\item{margin_*}{Plot margins. Change \code{margin_left} for longer/shorter axis labels.}
 \item{w}{\code{420} in px. Inner plot width.}
 \item{h}{\code{280} in px. Inner plot height.}
 \item{bar_width}{\code{16} in px. Default width of bars for all plots,
@@ -25,8 +25,8 @@ ignored when \code{scale_plot = TRUE}.}
 \item{line_size}{\code{2} in px. Default width of lines for all plots.}
 \item{point_size}{\code{3} in px. Default point radius for all plots.}
 \item{[bar,line,point]_color}{\code{[#46bac2,#46bac2,#371ea3]}}
-\item{positive_color}{\code{#8bdcbe} for Break Down and Shapley Values bars.}
-\item{negative_color}{\code{#f05a71} for Break Down and Shapley Values bars.}
+\item{positive_color}{\code{#8bdcbe} for Break Down and SHAP Values bars.}
+\item{negative_color}{\code{#f05a71} for Break Down and SHAP Values bars.}
 \item{default_color}{\code{#371ea3} for Break Down bar and highlighted line.}
 }
 }
@@ -35,19 +35,19 @@ ignored when \code{scale_plot = TRUE}.}
 one of \code{[bd,sv,cp,fi,pd,ad,fd]}.\cr
 
 \describe{
-\item{**_title}{plot specific title. Default varies.}
-\item{**_subtitle}{plot specific subtitle. Default is \code{subtitle}.}
-\item{**_bar_width}{plot specific width of bars. Default is \code{bar_width},
+\item{**_title}{Plot specific title. Default varies.}
+\item{**_subtitle}{Plot specific subtitle. Default is \code{subtitle}.}
+\item{**_bar_width}{Plot specific width of bars. Default is \code{bar_width},
 ignored when \code{scale_plot = TRUE}.}
-\item{**_line_size}{\code{line_size} plot specific width of lines. Default is \code{line_size}.}
-\item{**_point_size}{plot specific point radius. Default is \code{point_size}.}
-\item{**_*_color}{plot specific \code{[bar,line,point]} color. Default is \code{[bar,line,point]_color}.}
+\item{**_line_size}{\code{line_size} Plot specific width of lines. Default is \code{line_size}.}
+\item{**_point_size}{Plot specific point radius. Default is \code{point_size}.}
+\item{**_*_color}{Plot specific \code{[bar,line,point]} color. Default is \code{[bar,line,point]_color}.}
 }
 }
 }
 \description{
 This function returns default options for \code{\link{modelStudio}}.
-It is possible to modify values of this list and pass it to \code{options}
+It is possible to modify values of this list and pass it to the \code{options}
 parameter in the main function. \strong{WARNING: Editing default options may cause
 unintended behavior.}
 }

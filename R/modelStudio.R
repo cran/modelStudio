@@ -1,62 +1,68 @@
-#' @title Generates interactive studio to explain predictive model
+#' @title Generate Interactive Studio with Explanations for the Model
 #'
 #' @description
 #' This tool uses your model, data and new observations, to provide local
 #' and global explanations. It generates plots and descriptions in the form
 #' of the serverless HTML site, that supports animations and interactivity made with D3.js.
 #'
-#' @param object an explainer created with function \code{DALEX::explain()} or a model to be explained.
-#' @param new_observation a new observation with columns that correspond to variables used in the model.
-#' @param facet_dim dimensions of the grid. Default is \code{c(2,2)}.
-#' @param time in ms. Set animation length. Default is \code{500}.
-#' @param max_features maximum number of features to be included in Break Down and Shapley Values plot. Default is \code{10}.
-#' @param N number of observations used for calculation of partial dependency profiles. Default is \code{500}.
-#' @param B number of random paths used for calculation of shapley values. Default is \code{25}.
-#' @param show_info verbose progress bar on console? Default is \code{TRUE}.
-#' @param parallel speed up computation using \code{parallelMap::parallelMap()}.
+#' Find more details about plots in \href{https://pbiecek.github.io/PM_VEE/}{Predictive Models: Explore, Explain, and Debug}
+#'
+#' @param object An \code{explainer} created with function \code{DALEX::explain()} or a model to be explained.
+#' @param new_observation A new observation with columns that correspond to variables used in the model.
+#' @param facet_dim Dimensions of the grid. Default is \code{c(2,2)}.
+#' @param time Time in ms. Set animation length. Default is \code{500}.
+#' @param max_features Maximum number of features to be included in Break Down and SHAP Values plots. Default is \code{10}.
+#' @param N Number of observations used for calculation of partial dependency profiles. Default is \code{400}.
+#' @param B Number of random paths used for calculation of SHAP values. Default is \code{15}.
+#' @param show_info Verbose progress bar on the console. Default is \code{TRUE}.
+#' @param parallel Speed up the computation using \code{parallelMap::parallelMap()}.
 #' See \href{https://modeloriented.github.io/modelStudio/articles/vignette_modelStudio.html#parallel-computation}{\bold{vignette}}.
 #' @param viewer Default is \code{external} to display in an external RStudio window.
 #' Use \code{browser} to display in an external browser or
 #' \code{internal} to use the RStudio internal viewer pane for output.
-#' @param options customize \code{modelStudio}. See \code{\link{modelStudioOptions}} and
+#' @param options Customize \code{modelStudio}. See \code{\link{modelStudioOptions}} and
 #' \href{https://modeloriented.github.io/modelStudio/articles/vignette_modelStudio.html#plot-options}{\bold{vignette}}.
-#' @param ... other parameters.
-#' @param data validation dataset, will be extracted from \code{object} if it is an explainer.
+#' @param ... Other parameters.
+#' @param data Validation dataset, will be extracted from \code{object} if it is an explainer.
 #' NOTE: It is best when target variable is not present in the \code{data}.
-#' @param y true labels for \code{data}, will be extracted from \code{object} if it is an explainer.
-#' @param predict_function predict function, will be extracted from \code{object} if it is an explainer.
-#' @param label a name of the model, will be extracted from \code{object} if it is an explainer.
+#' @param y True labels for \code{data}, will be extracted from \code{object} if it is an \code{explainer}.
+#' @param predict_function Predict function, will be extracted from \code{object} if it is an \code{explainer}.
+#' @param label A name of the model, will be extracted from \code{object} if it is an \code{explainer}.
 #'
-#' @return an object of the \code{r2d3} class
+#' @return An object of the \code{r2d3} class.
 #'
 #' @importFrom utils head tail setTxtProgressBar txtProgressBar installed.packages
 #' @importFrom stats aggregate predict
 #' @importFrom grDevices nclass.Sturges
 #'
 #' @references
-#' \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
-#' \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
-#' \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
-#' \href{https://modeloriented.github.io/DALEXtra/}{\bold{DALEXtra}}
+#'
+#' \itemize{
+#'   \item Wrapper for the function can be found in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
+#'   \item Feature Importance, Ceteris Paribus, Partial Dependency and Accumulated Dependency plots
+#' are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
+#'   \item Break Down and SHAP Values plots are implemented in \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
+#' }
+#'
+#' @seealso
+#' Python wrappers and more can be found in \href{https://modeloriented.github.io/DALEXtra/}{\bold{DALEXtra}}
 #'
 #' @examples
 #' library("modelStudio")
 #'
 #' # ex1 classification
 #'
-#' titanic_small <- DALEX::titanic_imputed[,c(1,2,3,6,7,9)]
-#' titanic_small$survived <- titanic_small$survived == "yes"
-#'
-#' model_titanic_glm <- glm(survived ~ gender + age + fare + class + sibsp,
-#'                          data = titanic_small, family = "binomial")
+#' model_titanic_glm <- glm(survived ~.,
+#'                          data = DALEX::titanic_imputed,
+#'                          family = "binomial")
 #'
 #' explain_titanic_glm <- DALEX::explain(model_titanic_glm,
-#'                                       data = titanic_small[,-6],
-#'                                       y = titanic_small[,6],
+#'                                       data = DALEX::titanic_imputed[,-8],
+#'                                       y = DALEX::titanic_imputed[,8],
 #'                                       label = "glm",
 #'                                       verbose = FALSE)
 #'
-#' new_observations <- titanic_small[1:2,]
+#' new_observations <- DALEX::titanic_imputed[1:2,]
 #' rownames(new_observations) <- c("Lucas","James")
 #'
 #' modelStudio(explain_titanic_glm, new_observations,
@@ -65,21 +71,19 @@
 #' \donttest{
 #' # ex2 regression
 #'
-#' apartments <- DALEX::apartments
-#'
 #' model_apartments <- glm(m2.price ~. ,
-#'                         data = apartments)
+#'                         data = DALEX::apartments)
 #'
 #' explain_apartments <- DALEX::explain(model_apartments,
-#'                                      data = apartments[,-1],
-#'                                      y = apartments[,1],
+#'                                      data = DALEX::apartments[,-1],
+#'                                      y = DALEX::apartments[,1],
 #'                                      verbose = FALSE)
 #'
-#' new_apartments <- apartments[1:2,]
+#' new_apartments <- DALEX::apartments[1:2,]
 #' rownames(new_apartments) <- c("ap1","ap2")
 #'
 #' modelStudio(explain_apartments, new_apartments,
-#'             facet_dim = c(1,2), time = 1000,
+#'             facet_dim = c(2, 3), time = 1000,
 #'             show_info = FALSE)
 #' }
 #'
@@ -96,8 +100,8 @@ modelStudio.explainer <- function(object,
                                   facet_dim = c(2,2),
                                   time = 500,
                                   max_features = 10,
-                                  N = 500,
-                                  B = 25,
+                                  N = 400,
+                                  B = 15,
                                   show_info = TRUE,
                                   parallel = FALSE,
                                   options = modelStudioOptions(),
@@ -135,8 +139,8 @@ modelStudio.default <- function(object,
                                 facet_dim = c(2,2),
                                 time = 500,
                                 max_features = 10,
-                                N = 500,
-                                B = 25,
+                                N = 400,
+                                B = 15,
                                 show_info = TRUE,
                                 parallel = FALSE,
                                 options = modelStudioOptions(),
@@ -225,7 +229,7 @@ modelStudio.default <- function(object,
         model, data, predict_function, new_observation, label = label)
 
       bd_data <- prepare_break_down(bd, max_features)
-      sv_data <- prepare_shapley_values(sv, max_features)
+      sv_data <- prepare_shap_values(sv, max_features)
       cp_data <- prepare_ceteris_paribus(cp, variables = variable_names)
 
       list(bd_data, cp_data, sv_data)
@@ -258,7 +262,7 @@ modelStudio.default <- function(object,
       if (show_info) setTxtProgressBar(pb, 5 + i)
 
       bd_data <- prepare_break_down(bd, max_features)
-      sv_data <- prepare_shapley_values(sv, max_features)
+      sv_data <- prepare_shap_values(sv, max_features)
       cp_data <- prepare_ceteris_paribus(cp, variables = variable_names)
 
       obs_list[[i]] <- list(bd_data, cp_data, sv_data)
@@ -297,7 +301,9 @@ modelStudio.default <- function(object,
                     options = options,
                     d3_version = "4",
                     viewer = viewer,
-                    sizing = sizing_policy
+                    sizing = sizing_policy,
+                    width = facet_dim[2]*(options$w + options$margin_left + options$margin_right),
+                    height = 100 + facet_dim[1]*(options$h + options$margin_top + options$margin_bottom)
                   )
 
   model_studio$x$script <- remove_file_paths(model_studio$x$script, "js")

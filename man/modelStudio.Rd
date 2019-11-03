@@ -4,85 +4,85 @@
 \alias{modelStudio}
 \alias{modelStudio.explainer}
 \alias{modelStudio.default}
-\title{Generates interactive studio to explain predictive model}
+\title{Generate Interactive Studio with Explanations for the Model}
 \usage{
 modelStudio(object, ...)
 
 \method{modelStudio}{explainer}(object, new_observation, facet_dim = c(2,
-  2), time = 500, max_features = 10, N = 500, B = 25,
+  2), time = 500, max_features = 10, N = 400, B = 15,
   show_info = TRUE, parallel = FALSE, options = modelStudioOptions(),
   viewer = "external", ...)
 
 \method{modelStudio}{default}(object, data, y,
   predict_function = predict, label = class(model)[1], new_observation,
-  facet_dim = c(2, 2), time = 500, max_features = 10, N = 500,
-  B = 25, show_info = TRUE, parallel = FALSE,
+  facet_dim = c(2, 2), time = 500, max_features = 10, N = 400,
+  B = 15, show_info = TRUE, parallel = FALSE,
   options = modelStudioOptions(), viewer = "external", ...)
 }
 \arguments{
-\item{object}{an explainer created with function \code{DALEX::explain()} or a model to be explained.}
+\item{object}{An \code{explainer} created with function \code{DALEX::explain()} or a model to be explained.}
 
-\item{...}{other parameters.}
+\item{...}{Other parameters.}
 
-\item{new_observation}{a new observation with columns that correspond to variables used in the model.}
+\item{new_observation}{A new observation with columns that correspond to variables used in the model.}
 
-\item{facet_dim}{dimensions of the grid. Default is \code{c(2,2)}.}
+\item{facet_dim}{Dimensions of the grid. Default is \code{c(2,2)}.}
 
-\item{time}{in ms. Set animation length. Default is \code{500}.}
+\item{time}{Time in ms. Set animation length. Default is \code{500}.}
 
-\item{max_features}{maximum number of features to be included in Break Down and Shapley Values plot. Default is \code{10}.}
+\item{max_features}{Maximum number of features to be included in Break Down and SHAP Values plots. Default is \code{10}.}
 
-\item{N}{number of observations used for calculation of partial dependency profiles. Default is \code{500}.}
+\item{N}{Number of observations used for calculation of partial dependency profiles. Default is \code{400}.}
 
-\item{B}{number of random paths used for calculation of shapley values. Default is \code{25}.}
+\item{B}{Number of random paths used for calculation of SHAP values. Default is \code{15}.}
 
-\item{show_info}{verbose progress bar on console? Default is \code{TRUE}.}
+\item{show_info}{Verbose progress bar on the console. Default is \code{TRUE}.}
 
-\item{parallel}{speed up computation using \code{parallelMap::parallelMap()}.
+\item{parallel}{Speed up the computation using \code{parallelMap::parallelMap()}.
 See \href{https://modeloriented.github.io/modelStudio/articles/vignette_modelStudio.html#parallel-computation}{\bold{vignette}}.}
 
-\item{options}{customize \code{modelStudio}. See \code{\link{modelStudioOptions}} and
+\item{options}{Customize \code{modelStudio}. See \code{\link{modelStudioOptions}} and
 \href{https://modeloriented.github.io/modelStudio/articles/vignette_modelStudio.html#plot-options}{\bold{vignette}}.}
 
 \item{viewer}{Default is \code{external} to display in an external RStudio window.
 Use \code{browser} to display in an external browser or
 \code{internal} to use the RStudio internal viewer pane for output.}
 
-\item{data}{validation dataset, will be extracted from \code{object} if it is an explainer.
+\item{data}{Validation dataset, will be extracted from \code{object} if it is an explainer.
 NOTE: It is best when target variable is not present in the \code{data}.}
 
-\item{y}{true labels for \code{data}, will be extracted from \code{object} if it is an explainer.}
+\item{y}{True labels for \code{data}, will be extracted from \code{object} if it is an \code{explainer}.}
 
-\item{predict_function}{predict function, will be extracted from \code{object} if it is an explainer.}
+\item{predict_function}{Predict function, will be extracted from \code{object} if it is an \code{explainer}.}
 
-\item{label}{a name of the model, will be extracted from \code{object} if it is an explainer.}
+\item{label}{A name of the model, will be extracted from \code{object} if it is an \code{explainer}.}
 }
 \value{
-an object of the \code{r2d3} class
+An object of the \code{r2d3} class.
 }
 \description{
 This tool uses your model, data and new observations, to provide local
 and global explanations. It generates plots and descriptions in the form
 of the serverless HTML site, that supports animations and interactivity made with D3.js.
+
+Find more details about plots in \href{https://pbiecek.github.io/PM_VEE/}{Predictive Models: Explore, Explain, and Debug}
 }
 \examples{
 library("modelStudio")
 
 # ex1 classification
 
-titanic_small <- DALEX::titanic_imputed[,c(1,2,3,6,7,9)]
-titanic_small$survived <- titanic_small$survived == "yes"
-
-model_titanic_glm <- glm(survived ~ gender + age + fare + class + sibsp,
-                         data = titanic_small, family = "binomial")
+model_titanic_glm <- glm(survived ~.,
+                         data = DALEX::titanic_imputed,
+                         family = "binomial")
 
 explain_titanic_glm <- DALEX::explain(model_titanic_glm,
-                                      data = titanic_small[,-6],
-                                      y = titanic_small[,6],
+                                      data = DALEX::titanic_imputed[,-8],
+                                      y = DALEX::titanic_imputed[,8],
                                       label = "glm",
                                       verbose = FALSE)
 
-new_observations <- titanic_small[1:2,]
+new_observations <- DALEX::titanic_imputed[1:2,]
 rownames(new_observations) <- c("Lucas","James")
 
 modelStudio(explain_titanic_glm, new_observations,
@@ -91,28 +91,31 @@ modelStudio(explain_titanic_glm, new_observations,
 \donttest{
 # ex2 regression
 
-apartments <- DALEX::apartments
-
 model_apartments <- glm(m2.price ~. ,
-                        data = apartments)
+                        data = DALEX::apartments)
 
 explain_apartments <- DALEX::explain(model_apartments,
-                                     data = apartments[,-1],
-                                     y = apartments[,1],
+                                     data = DALEX::apartments[,-1],
+                                     y = DALEX::apartments[,1],
                                      verbose = FALSE)
 
-new_apartments <- apartments[1:2,]
+new_apartments <- DALEX::apartments[1:2,]
 rownames(new_apartments) <- c("ap1","ap2")
 
 modelStudio(explain_apartments, new_apartments,
-            facet_dim = c(1,2), time = 1000,
+            facet_dim = c(2, 3), time = 1000,
             show_info = FALSE)
 }
 
 }
 \references{
-\href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
-\href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
-\href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
-\href{https://modeloriented.github.io/DALEXtra/}{\bold{DALEXtra}}
+\itemize{
+  \item Wrapper for the function can be found in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
+  \item Feature Importance, Ceteris Paribus, Partial Dependency and Accumulated Dependency plots
+are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
+  \item Break Down and SHAP Values plots are implemented in \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
+}
+}
+\seealso{
+Python wrappers and more can be found in \href{https://modeloriented.github.io/DALEXtra/}{\bold{DALEXtra}}
 }
