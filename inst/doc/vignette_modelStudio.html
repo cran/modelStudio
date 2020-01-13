@@ -7,12 +7,13 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <meta name="author" content="Hubert Baniecki" />
 
-<meta name="date" content="2019-11-03" />
+<meta name="date" content="2020-01-10" />
 
 <title>modelStudio - perks and features</title>
 
@@ -96,7 +97,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -303,7 +304,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">modelStudio - perks and features</h1>
 <h4 class="author">Hubert Baniecki</h4>
-<h4 class="date">2019-11-03</h4>
+<h4 class="date">2020-01-10</h4>
 
 
 
@@ -530,13 +531,16 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div id="references" class="section level2">
 <h2>References</h2>
 <ul>
-<li>Wrapper for the function can be found in <a href="https://modeloriented.github.io/DALEX/">DALEX</a></li>
+<li>Wrapper for the function is implemented in <a href="https://modeloriented.github.io/DALEX/">DALEX</a></li>
 <li>Feature Importance, Ceteris Paribus, Partial Dependency and Accumulated Dependency plots are implemented in <a href="https://modeloriented.github.io/ingredients/">ingredients</a></li>
 <li>Break Down and SHAP Values plots are implemented in <a href="https://modeloriented.github.io/iBreakDown/">iBreakDown</a></li>
 <li>Python wrappers and more can be found in <a href="https://modeloriented.github.io/DALEXtra/">DALEXtra</a></li>
 </ul>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

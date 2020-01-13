@@ -1,0 +1,14 @@
+bibentry(key = "modelStudio",
+  bibtype = "Article",
+  author = c(
+      person("Hubert", "Baniecki"),
+      person("Przemyslaw", "Biecek")
+      ),
+  title = "{modelStudio}: Interactive Studio with Explanations for {ML} Predictive Models",
+  doi = "10.21105/joss.01798",
+  url = "https://doi.org/10.21105/joss.01798",
+  year = "2019",
+  month = "Nov",
+  publisher = "The Open Journal",
+  journal = "The Journal of Open Source Software"
+)
