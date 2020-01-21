@@ -1,6 +1,6 @@
 Package: modelStudio
 Title: Interactive Studio with Explanations for ML Predictive Models
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: 
     c(person("Hubert", "Baniecki", role = c("aut", "cre"),
              email = "hbaniecki@gmail.com",
@@ -28,9 +28,9 @@ URL: https://ModelOriented.github.io/modelStudio/,
 BugReports: https://github.com/ModelOriented/modelStudio/issues
 Language: en-US
 NeedsCompilation: no
-Packaged: 2020-01-10 14:48:56 UTC; Hubert
+Packaged: 2020-01-21 11:23:44 UTC; Hubert
 Author: Hubert Baniecki [aut, cre] (<https://orcid.org/0000-0001-6661-5364>),
   Przemyslaw Biecek [aut] (<https://orcid.org/0000-0001-8423-1823>)
 Maintainer: Hubert Baniecki <hbaniecki@gmail.com>
 Repository: CRAN
-Date/Publication: 2020-01-13 13:40:02 UTC
+Date/Publication: 2020-01-21 11:50:02 UTC
