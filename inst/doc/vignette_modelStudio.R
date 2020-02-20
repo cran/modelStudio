@@ -36,35 +36,40 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 #  library("modelStudio")
 
 ## ----eval = FALSE--------------------------------------------------------
-#  new_observations <- test[1:3,]
-#  rownames(new_observations) <- c("John Snow", "Arya Stark", "Samwell Tarly")
+#  new_observation <- test[1:3,]
+#  rownames(new_observation) <- c("John Snow", "Arya Stark", "Samwell Tarly")
+#  true_labels <- test[1:3,6]
 #  
-#  modelStudio(explainer, new_observation = new_observations)
+#  modelStudio(explainer, new_observation = new_observation,
+#                         new_observation_y  = true_labels)
 
 ## ----eval = FALSE--------------------------------------------------------
 #  # small dashboard with 2 panels
-#  modelStudio(explainer, new_observation = test[1:2,], facet_dim = c(1,2))
+#  modelStudio(explainer, new_observation, facet_dim = c(1,2))
 #  
 #  # large dashboard with 9 panels
-#  modelStudio(explainer, new_observation = test[1:2,], facet_dim = c(3,3))
+#  modelStudio(explainer, new_observation, facet_dim = c(3,3))
 
 ## ----eval = FALSE--------------------------------------------------------
 #  # slow down animations
-#  modelStudio(explainer, new_observation = test[1:2,], time = 1000)
+#  modelStudio(explainer, new_observation, time = 1000)
 #  
 #  # turn off animations
-#  modelStudio(explainer, new_observation = test[1:2,], time = 0)
+#  modelStudio(explainer, new_observation, time = 0)
 
 ## ----eval = FALSE--------------------------------------------------------
-#  modelStudio(explainer, new_observation = test[1:2,], N = 100, B = 10)
+#  modelStudio(explainer, new_observation, N = 100, B = 10)
 #  
-#  modelStudio(explainer, new_observation = test[1:2,], N = 1000, B = 50)
+#  modelStudio(explainer, new_observation, N = 1000, B = 50)
 
 ## ----eval = FALSE--------------------------------------------------------
-#  modelStudio(explainer, new_observation = test[1:2,], show_info = FALSE)
+#  modelStudio(explainer, new_observation, eda = FALSE)
 
 ## ----eval = FALSE--------------------------------------------------------
-#  modelStudio(explainer, new_observation = test[1:2,], viewer = "browser")
+#  modelStudio(explainer, new_observation, show_info = FALSE)
+
+## ----eval = FALSE--------------------------------------------------------
+#  modelStudio(explainer, new_observation, viewer = "browser")
 
 ## ----eval = FALSE--------------------------------------------------------
 #  #set up the cluster
@@ -90,7 +95,7 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 #    bd_negative_color = "orange"
 #  )
 #  
-#  modelStudio(explainer, new_observation = test[1,], options = new_options)
+#  modelStudio(explainer, new_observation, options = new_options)
 
 ## ----eval = FALSE--------------------------------------------------------
 #  library(DALEXtra)
@@ -108,11 +113,11 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 #  model <- mlr::train(learner, task)
 #  
 #  # create an explainer for mlr model
-#  explainer_mlr <- explain_mlr(model, data = test[,-6], y = test[,6])
+#  explainer_mlr <- explain_mlr(model, data = test[,-6], y = test[,6], label = "mlr")
 #  
 #  # call model studio for mlr model
 #  modelStudio(explainer_mlr,
-#              new_observation = test[1:4,],
+#              new_observation,
 #              N = 100, B = 10)
 
 ## ----eval = FALSE--------------------------------------------------------
@@ -130,7 +135,8 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 #  explainer_scikit <- explain_scikitlearn(pkl_gbm,
 #                                          yml = yml,
 #                                          data = titanic_test[,1:17],
-#                                          y = titanic_test[,18])
+#                                          y = titanic_test[,18],
+#                                          label = "python-gbm")
 #  
 #  # start model studio
 #  modelStudio(explainer_scikit,
