@@ -17,9 +17,10 @@
 #' @param N Number of observations used for calculation of partial dependence profiles. Default is \code{400}.
 #' @param B Number of random paths used for calculation of Shapley values. Default is \code{15}.
 #' @param eda Compute EDA plots. Default is \code{TRUE}.
-#' @param show_info Verbose progress bar on the console. Default is \code{TRUE}.
+#' @param show_info Verbose progress on the console. Default is \code{TRUE}.
 #' @param parallel Speed up the computation using \code{parallelMap::parallelMap()}.
 #' See \href{https://modeloriented.github.io/modelStudio/articles/vignette_modelStudio.html#parallel-computation}{\bold{vignette}}.
+#' This might interfere with showing progress using \code{show_info}.
 #' @param viewer Default is \code{external} to display in an external RStudio window.
 #' Use \code{browser} to display in an external browser or
 #' \code{internal} to use the RStudio internal viewer pane for output.
@@ -30,8 +31,9 @@
 #' @return An object of the \code{r2d3} class.
 #'
 #' @importFrom utils head tail setTxtProgressBar txtProgressBar packageVersion
-#' @importFrom stats aggregate predict quantile
+#' @importFrom stats aggregate predict quantile IQR
 #' @importFrom grDevices nclass.Sturges
+#' @import progress
 #'
 #' @references
 #'
@@ -57,47 +59,68 @@
 #'                      family = "binomial")
 #'
 #' # Wrap it into an explainer
-#' explain_titanic <- explain(model_titanic,
-#'                            data = titanic_imputed[,-8],
-#'                            y = titanic_imputed[,8],
-#'                            label = "glm",
-#'                            verbose = FALSE)
+#' explainer_titanic <- explain(model_titanic,
+#'                              data = titanic_imputed[,-8],
+#'                              y = titanic_imputed[,8],
+#'                              label = "glm",
+#'                              verbose = FALSE)
 #'
 #' # Pick some data points
 #' new_observations <- titanic_imputed[1:2,]
 #' rownames(new_observations) <- c("Lucas","James")
 #'
 #' # Make a studio for the model
-#' modelStudio(explain_titanic, new_observations,
+#' modelStudio(explainer_titanic, new_observations,
 #'             N = 100, B = 10, show_info = FALSE)
 #'
 #' \donttest{
+#'
 #' #:# ex2 regression on 'apartments' dataset
+#' library("randomForest")
 #'
-#' model_apartments <- randomForest::randomForest(m2.price ~. ,
-#'                                                data = apartments)
+#' model_apartments <- randomForest(m2.price ~. ,data = apartments)
 #'
-#' explain_apartments <- explain(model_apartments,
-#'                               data = apartments[,-1],
-#'                               y = apartments[,1],
-#'                               verbose = FALSE)
+#' explainer_apartments <- explain(model_apartments,
+#'                                 data = apartments[,-1],
+#'                                 y = apartments[,1],
+#'                                 verbose = FALSE)
 #'
 #' new_apartments <- apartments[1:2,]
 #' rownames(new_apartments) <- c("ap1","ap2")
 #'
 #' # change dashboard dimensions and animation length
-#' modelStudio(explain_apartments, new_apartments,
+#' modelStudio(explainer_apartments, new_apartments,
 #'             facet_dim = c(2, 3), time = 800,
 #'             show_info = FALSE)
 #'
 #' # add information about true labels
-#' modelStudio(explain_apartments, new_apartments,
+#' modelStudio(explainer_apartments, new_apartments,
 #'                                 new_observation_y = apartments[1:2, 1],
 #'                                 show_info = FALSE)
 #'
 #' # don't compute EDA plots
-#' modelStudio(explain_apartments, eda = FALSE,
+#' modelStudio(explainer_apartments, eda = FALSE,
 #'             show_info = FALSE)
+#'
+#'
+#' #:# ex3 xgboost model on 'HR' dataset
+#' library("xgboost")
+#'
+#' model_matrix <- model.matrix(status == "fired" ~ . -1, HR)
+#' data <- xgb.DMatrix(model_matrix, label = HR$status == "fired")
+#'
+#' params <- list(max_depth = 2, eta = 1, silent = 1, nthread = 2,
+#'                objective = "binary:logistic", eval_metric = "auc")
+#'
+#' model_HR <- xgb.train(params, data, nrounds = 50)
+#'
+#' explainer_HR <- explain(model_HR,
+#'                         data = model_matrix,
+#'                         y = HR$status == "fired",
+#'                         verbose = FALSE)
+#'
+#' modelStudio(explainer_HR, show_info = FALSE)
+#'
 #' }
 #'
 #' @export
@@ -129,88 +152,99 @@ modelStudio.explainer <- function(explainer,
   predict_function <- explainer$predict_function
   label <- explainer$label
 
-  if (is.null(new_observation)) {
-    message("`new_observation` argument is NULL. Observations needed to calculate local explanations are taken at random from the data.")
-    new_observation <- ingredients::select_sample(data, 3)
+  #:# checks
+  if (is.null(rownames(data))) {
+    rownames(data) <- 1:nrow(data)
   }
 
-  ## safeguard
-  new_observation <- as.data.frame(new_observation)
-  data <- as.data.frame(data)
+  if (is.null(new_observation)) {
+    if (show_info) message("`new_observation` argument is NULL.\n",
+                           "Observations needed to calculate local explanations are taken at random from the data.\n")
+    new_observation <- ingredients::select_sample(data, 3)
+
+  } else if (is.null(dim(new_observation))) {
+    warning("`new_observation` argument is not a data.frame nor a matrix, coerced to data.frame\n")
+    new_observation <- as.data.frame(new_observation)
+
+  } else if (is.null(rownames(new_observation))) {
+    rownames(new_observation) <- 1:nrow(new_observation)
+  }
+
+  check_single_prediction <- try(predict_function(model, new_observation[1,, drop = FALSE]), silent = TRUE)
+  if (class(check_single_prediction)[1] == "try-error") {
+    stop("`predict_function` returns an error when executed on `new_observation[1,, drop = FALSE]` \n")
+  }
+  #:#
 
   ## get proper names of features that arent target
-  is_y <- sapply(data, function(x) identical(x, y))
+  is_y <- is_y_in_data(data, y)
   potential_variable_names <- names(is_y[!is_y])
   variable_names <- intersect(potential_variable_names, colnames(new_observation))
   ## get rid of target in data
-  data <- data[!is_y]
-
+  data <- data[,!is_y]
 
   obs_count <- dim(new_observation)[1]
   obs_data <- new_observation
   obs_list <- list()
 
   ## later update progress bar after all explanation functions
-  if (show_info) pb <- txtProgressBar(0, obs_count + 5, style = 3)
+  if (show_info) {
+    pb <- progress_bar$new(
+      format = "  Calculating :what \n    Elapsed time: :elapsedfull ETA::eta", # :percent  [:bar]
+      total = (2*B + 8 + 1)*obs_count + (4*B + 3*B + B) + 1,
+      show_after = 0
+    )
+    pb$tick(0, tokens = list(what = "..."))
+  }
 
   ## count only once
-  fi <- try_catch(
+  fi <- calculate(
     ingredients::feature_importance(
         model, data, y, predict_function, variables = variable_names, B = B),
-    "ingredients::feature_importance", "", show_info)
+    "ingredients::feature_importance", show_info, pb, 4*B)
 
-  if (show_info) setTxtProgressBar(pb, 1)
-
-  which_numerical <- sapply(data[,, drop = FALSE], is.numeric)
+  which_numerical <- which_variables_are_numeric(data)
 
   ## because aggregate_profiles calculates numerical OR categorical
   if (all(which_numerical)) {
-    pd_n <- try_catch(
+    pd_n <- calculate(
       ingredients::partial_dependence(
           model, data, predict_function, variable_type = "numerical", N = N),
-      "ingredients::partial_dependence", "numerical", show_info)
-    if (show_info) setTxtProgressBar(pb, 2)
+      "ingredients::partial_dependence (numerical)", show_info, pb, B)
     pd_c <- NULL
-    ad_n <- try_catch(
+    ad_n <- calculate(
       ingredients::accumulated_dependence(
           model, data, predict_function, variable_type = "numerical", N = N),
-      "ingredients::accumulated_dependence", "numerical", show_info)
-    if (show_info) setTxtProgressBar(pb, 4)
+      "ingredients::accumulated_dependence (numerical)", show_info, pb, 3*B)
     ad_c <- NULL
   } else if (all(!which_numerical)) {
     pd_n <- NULL
-    pd_c <- try_catch(
+    pd_c <- calculate(
       ingredients::partial_dependence(
           model, data, predict_function, variable_type = "categorical", N = N),
-      "ingredients::partial_dependence", "categorical", show_info)
-    if (show_info) setTxtProgressBar(pb, 3)
+      "ingredients::partial_dependence (categorical)", show_info, pb, B)
     ad_n <- NULL
-    ad_c <- try_catch(
+    ad_c <- calculate(
       ingredients::accumulated_dependence(
           model, data, predict_function, variable_type = "categorical", N = N),
-      "ingredients::accumulated_dependence", "categorical", show_info)
-    if (show_info) setTxtProgressBar(pb, 5)
+      "ingredients::accumulated_dependence (categorical)", show_info, pb, 3*B)
   } else {
-    pd_n <- try_catch(
+    pd_n <- calculate(
       ingredients::partial_dependence(
         model, data, predict_function, variable_type = "numerical", N = N),
-      "ingredients::partial_dependence", "numerical", show_info)
-    if (show_info) setTxtProgressBar(pb, 2)
-    pd_c <- try_catch(
+      "ingredients::partial_dependence (numerical)", show_info, pb, B/2)
+    pd_c <- calculate(
       ingredients::partial_dependence(
         model, data, predict_function, variable_type = "categorical", N = N),
-      "ingredients::partial_dependence", "categorical", show_info)
-    if (show_info) setTxtProgressBar(pb, 3)
-    ad_n <- try_catch(
+      "ingredients::partial_dependence (categorical)", show_info, pb, B/2)
+    ad_n <- calculate(
       ingredients::accumulated_dependence(
         model, data, predict_function, variable_type = "numerical", N = N),
-      "ingredients::accumulated_dependence", "numerical", show_info)
-    if (show_info) setTxtProgressBar(pb, 4)
-    ad_c <- try_catch(
+      "ingredients::accumulated_dependence (numerical)", show_info, pb, 2*B)
+    ad_c <- calculate(
       ingredients::accumulated_dependence(
         model, data, predict_function, variable_type = "categorical", N = N),
-      "ingredients::accumulated_dependence", "categorical", show_info)
-    if (show_info) setTxtProgressBar(pb, 5)
+      "ingredients::accumulated_dependence (categorical)", show_info, pb, B)
   }
 
   fi_data <- prepare_feature_importance(fi, max_features, options$show_boxplot, ...)
@@ -229,20 +263,20 @@ modelStudio.explainer <- function(explainer,
     parallelMap::parallelLibrary(packages = loadedNamespaces())
 
     f <- function(i, model, data, predict_function, label, B, show_boxplot, ...) {
-      new_observation <- obs_data[i,]
+      new_observation <- obs_data[i,, drop = FALSE]
 
-      bd <- try_catch(
+      bd <- calculate(
         iBreakDown::local_attributions(
           model, data, predict_function, new_observation, label = label),
-        "iBreakDown::local_attributions", i, show_info)
-      sv <- try_catch(
+        paste0("iBreakDown::local_attributions (", i, ")"), show_info, pb, 8)
+      sv <- calculate(
         iBreakDown::shap(
           model, data, predict_function, new_observation, label = label, B = B),
-        "iBreakDown::shap", i, show_info, FALSE)
-      cp <- try_catch(
+        paste0("iBreakDown::shap (", i, ")"), show_info, pb, 2*B)
+      cp <- calculate(
         ingredients::ceteris_paribus(
           model, data, predict_function, new_observation, label = label),
-        "ingredients::ceteris_paribus", i, show_info, FALSE)
+        paste0("ingredients::ceteris_paribus (", i, ")"), show_info, pb, 1)
 
       bd_data <- prepare_break_down(bd, max_features, ...)
       sv_data <- prepare_shapley_values(sv, max_features, show_boxplot, ...)
@@ -264,26 +298,23 @@ modelStudio.explainer <- function(explainer,
 
     parallelMap::parallelStop()
 
-    if (show_info) setTxtProgressBar(pb, 5 + obs_count)
   } else {
     ## count once per observation
-    for(i in 1:obs_count){
-      new_observation <- obs_data[i,]
+    for(i in 1:obs_count) {
+      new_observation <- obs_data[i,, drop = FALSE]
 
-      bd <- try_catch(
+      bd <- calculate(
         iBreakDown::local_attributions(
           model, data, predict_function, new_observation, label = label),
-        "iBreakDown::local_attributions", i, show_info)
-      sv <- try_catch(
+        paste0("iBreakDown::local_attributions (", i, ")"), show_info, pb, 8)
+      sv <- calculate(
         iBreakDown::shap(
           model, data, predict_function, new_observation, label = label, B = B),
-        "iBreakDown::shap", i, show_info, FALSE)
-      cp <- try_catch(
+        paste0("iBreakDown::shap (", i, ")"), show_info, pb, 2*B)
+      cp <- calculate(
         ingredients::ceteris_paribus(
           model, data, predict_function, new_observation, label = label),
-        "ingredients::ceteris_paribus", i, show_info, FALSE)
-
-      if (show_info) setTxtProgressBar(pb, 5 + i)
+        paste0("ingredients::ceteris_paribus (", i, ")"), show_info, pb, 1)
 
       bd_data <- prepare_break_down(bd, max_features, ...)
       sv_data <- prepare_shapley_values(sv, max_features, options$show_boxplot, ...)
@@ -376,25 +407,46 @@ remove_file_paths <- function(text, type = NULL) {
 }
 
 #' @noRd
-#' @title try_catch
+#' @title calculate
 #'
 #' @description This function evaluates expression and returns its value.
 #' It returns \code{NULL} and prints \code{warning} if an error occurred.
+#' It also updates the \code{progress_bar} from the \code{progress} package.
 #'
 #' @param expr function
 #' @param function_name string
-#' @param i iteration/type
 #' @param show_info show message about what is calculated
+#' @param pb progress_bar
+#' @param ticks number of ticks
 #'
 #' @return Valid object or \code{NULL}
 
-try_catch <- function(expr, function_name, i = 1, show_info = TRUE, new = TRUE) {
+calculate <- function(expr, function_name, show_info = FALSE, pb = NULL, ticks = NULL) {
+
+  if (show_info) pb$tick(ticks, tokens = list(what = function_name))
+
   tryCatch({
-    if (show_info) message(paste0(ifelse(new,"\n",""), "Calculate ", function_name, " (", i, ")"))
     expr
     },
     error = function(e) {
       warning(paste0("Error occurred in ", function_name, " function: ", e$message))
       NULL
   })
+}
+
+# returns the vector of logical: TRUE for variables identical with the target
+is_y_in_data <- function(data, y) {
+  apply(data, 2, function(x) {
+    all(as.character(x) == as.character(y))
+  })
+}
+
+# check for numeric columns (works for data.frame AND matrix)
+# sapply, lapply doesnt work for matrix and apply doesnt work for data.frame
+which_variables_are_numeric <- function(data) {
+  if (is.matrix(data)) {
+    apply(data[,, drop = FALSE], 2, is.numeric)
+  } else {
+    sapply(data[,, drop = FALSE], is.numeric)
+  }
 }

@@ -122,6 +122,7 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 
 ## ----eval = FALSE--------------------------------------------------------
 #  library(DALEXtra)
+#  library(modelStudio)
 #  
 #  titanic_test <- read.csv(system.file("extdata", "titanic_test.csv", package = "DALEXtra"))
 #  titanic_train <- read.csv(system.file("extdata", "titanic_train.csv", package = "DALEXtra"))
@@ -139,7 +140,11 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 #                                          label = "python-gbm")
 #  
 #  # start model studio
-#  modelStudio(explainer_scikit,
-#              new_observation = titanic_test[1:4,1:17],
-#              N = 100, B = 10, options = modelStudioOptions(margin_left = 160))
+#  ms <- modelStudio(explainer_scikit,
+#                    new_observation = titanic_test[1:4,1:17],
+#                    options = modelStudioOptions(margin_left = 160))
+#  
+#  ms
+#  
+#  r2d3::save_d3_html(ms, "modelStudio-python-gbm.html")
 
