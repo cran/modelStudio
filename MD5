@@ -1,7 +1,7 @@
-93ebcce7d5eb95708712a2006b11aff7 *DESCRIPTION
+f0f9108bcbec2d13f3b209d94f2b8268 *DESCRIPTION
 0cc6468bedd2fc8a838f1af3cfdfc164 *NAMESPACE
-3d8d0aacf6dd166133ff0c76e5d931c6 *NEWS.md
-c17dfc631563ac8de62020182f0a9da3 *R/modelStudio.R
+c881b1e20475bad5eaf81949b819e5d4 *NEWS.md
+b6f94972e528dd9750086e0b777f9af7 *R/modelStudio.R
 038f1164be1b9d0cffd6a468c1b42890 *R/modelStudioOptions.R
 6ffa7581fc45a2ae2b91a72563d3655f *R/prepare.R
 bf426425182622f08103676dbdd09a83 *build/vignette.rds
@@ -12,13 +12,13 @@ bf426425182622f08103676dbdd09a83 *build/vignette.rds
 fa3884e12cfbab76ec409d07d2f255cc *inst/d3js/d3-tip.js
 0cf17d2304786a60957b1658409dcdd1 *inst/d3js/generatePlots.js
 544dd27e98b9ce8a09f73eedf7440a58 *inst/d3js/generateTooltipHtml.js
-1648aa437c470c9c5834b6c029abb479 *inst/d3js/hackHead.js
+70fd4d40300bd98f450b35330f1227ef *inst/d3js/hackHead.js
 e44327bd3dd529cb1bf526f2ae8e534e *inst/d3js/modelStudio.css
 75a33df0a6c8440c0f11d6f9f4583403 *inst/d3js/modelStudio.js
 69ddfad7d011a7486ec2263c41362d16 *inst/d3js/myTools.js
 732b2e56ccb90d4144f2e64eb0ec2c66 *inst/doc/vignette_modelStudio.R
 6b77bd4a037cde4a3e708baecb7edf67 *inst/doc/vignette_modelStudio.Rmd
-f4c39d26cd17ed078db6a545e188d593 *inst/doc/vignette_modelStudio.html
+c74e8b5033e7891b4ae34458dc5dd14c *inst/doc/vignette_modelStudio.html
 e854d52bf7c3accf849a23defe0688d4 *man/figures/logo.png
 0c693d6c04d7baf61efef210f2fd8993 *man/modelStudio.Rd
 5fe8f895e4b8becdb3a3325bd776b3c7 *man/modelStudioOptions.Rd
@@ -26,6 +26,6 @@ e854d52bf7c3accf849a23defe0688d4 *man/figures/logo.png
 4b99b3aa5101d5865e8a02889f6d87fa *tests/testthat.R
 3cb8a424e37b5a13ff6007de5e3a65ac *tests/testthat/test_modelStudio.R
 17888beb5e7fcd3910411e2907e9a717 *tests/testthat/test_modelStudioOptions.R
-c913f0303e4a4429d6e49727e90c1dd0 *tests/testthat/test_objects.R
+5c3251837e91d2515a04a84af91c41ad *tests/testthat/test_objects.R
 ccf5111b39a2d7bf3150b587a44e9ce8 *tests/testthat/test_warnings_and_errors.R
 6b77bd4a037cde4a3e708baecb7edf67 *vignettes/vignette_modelStudio.Rmd
