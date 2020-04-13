@@ -57,22 +57,21 @@ unintended behavior.}
 library("DALEX")
 library("modelStudio")
 
-# Create a model
-model_apartments <- glm(m2.price ~. ,
-                        data = apartments)
+# fit a model
+model_apartments <- glm(m2.price ~. , data = apartments)
 
-# Wrap it into an explainer
+# create an explainer for the model
 explainer_apartments <- DALEX::explain(model_apartments,
-                                       data = apartments[,-1],
-                                       y = apartments[,1],
-                                       verbose = FALSE)
+                                       data = apartments,
+                                       y = apartments$m2.price,
+                                       label = "glm")
 
-# Pick some data points
-new_apartments <- apartments[1:2,]
-rownames(new_apartments) <- c("ap1","ap2")
+# pick observations
+new_observation <- apartments[1:2,]
+rownames(new_observation) <- c("ap1","ap2")
 
-# Modify default options
-op <- modelStudioOptions(
+# modify default options
+new_options <- modelStudioOptions(
   show_subtitle = TRUE,
   bd_subtitle = "Hello World",
   line_size = 5,
@@ -83,9 +82,22 @@ op <- modelStudioOptions(
   bd_negative_color = "orange"
 )
 
-# Make a studio for the model with modified option
-modelStudio(explainer_apartments, new_apartments,
-            N = 100, B = 10, options = op,
-            show_info = FALSE)
+# make a studio for the model
+modelStudio(explainer_apartments,
+            new_observation,
+            options = new_options,
+            N = 100,  B = 10) # faster example
 
+}
+\references{
+\itemize{
+  \item The input object is implemented in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
+  \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots
+are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
+  \item Break Down and Shapley Values plots are implemented in \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
+}
+}
+\seealso{
+Vignettes: \href{https://modeloriented.github.io/modelStudio/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
+and \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
 }

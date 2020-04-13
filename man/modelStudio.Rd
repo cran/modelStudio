@@ -3,7 +3,7 @@
 \name{modelStudio}
 \alias{modelStudio}
 \alias{modelStudio.explainer}
-\title{Generate Interactive Studio for Explanatory Model Analysis}
+\title{Interactive Studio for Explanatory Model Analysis}
 \usage{
 modelStudio(explainer, ...)
 
@@ -25,7 +25,7 @@ modelStudio(explainer, ...)
 )
 }
 \arguments{
-\item{explainer}{An \code{explainer} created with function \code{DALEX::explain()}.}
+\item{explainer}{An \code{explainer} created with \code{DALEX::explain()}.}
 
 \item{...}{Other parameters.}
 
@@ -48,11 +48,11 @@ modelStudio(explainer, ...)
 \item{show_info}{Verbose progress on the console. Default is \code{TRUE}.}
 
 \item{parallel}{Speed up the computation using \code{parallelMap::parallelMap()}.
-See \href{https://modeloriented.github.io/modelStudio/articles/vignette_modelStudio.html#parallel-computation}{\bold{vignette}}.
+See \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
 This might interfere with showing progress using \code{show_info}.}
 
 \item{options}{Customize \code{modelStudio}. See \code{\link{modelStudioOptions}} and
-\href{https://modeloriented.github.io/modelStudio/articles/vignette_modelStudio.html#plot-options}{\bold{vignette}}.}
+\href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#plot-options}{\bold{vignette}}.}
 
 \item{viewer}{Default is \code{external} to display in an external RStudio window.
 Use \code{browser} to display in an external browser or
@@ -63,11 +63,11 @@ An object of the \code{r2d3} class.
 }
 \description{
 This function computes various (instance and dataset level) model explanations and produces an interactive,
-customisable dashboard made with D3.js. It consists of multiple panels for plots with their short descriptions.
+customizable dashboard made with D3.js. It consists of multiple panels for plots with their short descriptions.
 Easily save and share the dashboard with others. Tools for model exploration unite with tools for EDA
 (Exploratory Data Analysis) to give a broad overview of the model behavior.
 
-Find more details about the plots in \href{https://github.com/pbiecek/ema}{Explanatory Model Analysis: Explore, Explain and Examine Predictive Models}
+Theoretical introduction to the plots: \href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis: Explore, Explain and Examine Predictive Models}
 }
 \examples{
 library("DALEX")
@@ -75,25 +75,23 @@ library("modelStudio")
 
 #:# ex1 classification on 'titanic_imputed' dataset
 
-# Create a model
-model_titanic <- glm(survived ~.,
-                     data = titanic_imputed,
-                     family = "binomial")
+# fit a model
+model_titanic <- glm(survived ~., data = titanic_imputed, family = "binomial")
 
-# Wrap it into an explainer
+# create an explainer for the model
 explainer_titanic <- explain(model_titanic,
-                             data = titanic_imputed[,-8],
-                             y = titanic_imputed[,8],
-                             label = "glm",
-                             verbose = FALSE)
+                             data = titanic_imputed,
+                             y = titanic_imputed$survived,
+                             label = "Titanic GLM")
 
-# Pick some data points
+# pick observations
 new_observations <- titanic_imputed[1:2,]
 rownames(new_observations) <- c("Lucas","James")
 
-# Make a studio for the model
-modelStudio(explainer_titanic, new_observations,
-            N = 100, B = 10, show_info = FALSE)
+# make a studio for the model
+modelStudio(explainer_titanic,
+            new_observations,
+            N = 100, B = 10) # faster example
 
 \donttest{
 
@@ -103,57 +101,65 @@ library("randomForest")
 model_apartments <- randomForest(m2.price ~. ,data = apartments)
 
 explainer_apartments <- explain(model_apartments,
-                                data = apartments[,-1],
-                                y = apartments[,1],
-                                verbose = FALSE)
+                                data = apartments,
+                                y = apartments$m2.price)
 
 new_apartments <- apartments[1:2,]
 rownames(new_apartments) <- c("ap1","ap2")
 
 # change dashboard dimensions and animation length
-modelStudio(explainer_apartments, new_apartments,
-            facet_dim = c(2, 3), time = 800,
-            show_info = FALSE)
+modelStudio(explainer_apartments,
+            new_apartments,
+            facet_dim = c(2, 3),
+            time = 800)
 
 # add information about true labels
-modelStudio(explainer_apartments, new_apartments,
-                                new_observation_y = apartments[1:2, 1],
-                                show_info = FALSE)
+modelStudio(explainer_apartments,
+            new_apartments,
+            new_observation_y = new_apartments$m2.price)
 
 # don't compute EDA plots
-modelStudio(explainer_apartments, eda = FALSE,
-            show_info = FALSE)
+modelStudio(explainer_apartments,
+            eda = FALSE)
 
 
 #:# ex3 xgboost model on 'HR' dataset
 library("xgboost")
 
-model_matrix <- model.matrix(status == "fired" ~ . -1, HR)
-data <- xgb.DMatrix(model_matrix, label = HR$status == "fired")
+# fit a model
+HR_matrix <- model.matrix(status == "fired" ~ . -1, HR)
 
-params <- list(max_depth = 2, eta = 1, silent = 1, nthread = 2,
-               objective = "binary:logistic", eval_metric = "auc")
+xgb_matrix <- xgb.DMatrix(HR_matrix, label = HR$status == "fired")
 
-model_HR <- xgb.train(params, data, nrounds = 50)
+params <- list(max_depth = 7, objective = "binary:logistic", eval_metric = "auc")
 
+model_HR <- xgb.train(params, xgb_matrix, nrounds = 300)
+
+# create an explainer for the model
 explainer_HR <- explain(model_HR,
-                        data = model_matrix,
+                        data = HR_matrix,
                         y = HR$status == "fired",
-                        verbose = FALSE)
+                        label = "xgboost")
 
-modelStudio(explainer_HR, show_info = FALSE)
+# pick observations
+new_observation <- HR_matrix[1:2, , drop=FALSE]
+rownames(new_observation) <- c("id1", "id2")
+# make a studio for the model
+modelStudio(explainer_HR,
+            new_observation)
 
 }
 
 }
 \references{
 \itemize{
-  \item Wrapper for the function is implemented in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
+  \item The input object is implemented in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
   \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots
 are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
   \item Break Down and Shapley Values plots are implemented in \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
 }
 }
 \seealso{
-Python wrappers and more can be found in \href{https://modeloriented.github.io/DALEXtra/}{\bold{DALEXtra}}
+Vignettes: \href{https://modeloriented.github.io/modelStudio/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
+and \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
 }
