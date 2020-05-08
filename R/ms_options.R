@@ -6,10 +6,11 @@
 #' parameter in the main function. \strong{WARNING: Editing default options may cause
 #' unintended behavior.}
 #'
-#' @param ... Options to change, \code{option_name = value}.
+#' @param ... Options to change in the form \code{option_name = value}.
 #'
 #' @return \code{list} of options for \code{modelStudio}.
 #'
+#' @section Options:
 #' \subsection{Main options:}{
 #' \describe{
 #' \item{scale_plot}{\code{TRUE} Makes every plot the same height, ignores \code{bar_width}.}
@@ -66,17 +67,16 @@
 #' model_apartments <- glm(m2.price ~. , data = apartments)
 #'
 #' # create an explainer for the model
-#' explainer_apartments <- DALEX::explain(model_apartments,
-#'                                        data = apartments,
-#'                                        y = apartments$m2.price,
-#'                                        label = "glm")
+#' explainer_apartments <- explain(model_apartments,
+#'                                 data = apartments,
+#'                                 y = apartments$m2.price)
 #'
 #' # pick observations
 #' new_observation <- apartments[1:2,]
 #' rownames(new_observation) <- c("ap1","ap2")
 #'
 #' # modify default options
-#' new_options <- modelStudioOptions(
+#' new_options <- ms_options(
 #'   show_subtitle = TRUE,
 #'   bd_subtitle = "Hello World",
 #'   line_size = 5,
@@ -91,11 +91,11 @@
 #' modelStudio(explainer_apartments,
 #'             new_observation,
 #'             options = new_options,
-#'             N = 100,  B = 10) # faster example
+#'             N = 200,  B = 5) # faster example
 #'
 #' @export
-#' @rdname modelStudioOptions
-modelStudioOptions <- function(...) {
+#' @rdname ms_options
+ms_options <- function(...) {
 
   # prepare default options
   default_options <- list(
@@ -177,8 +177,17 @@ modelStudioOptions <- function(...) {
     at_point_color = "#371ea3"
   )
 
-  # input user options
+  # input new options
   default_options[names(list(...))] <- list(...)
 
   default_options
+}
+
+#' deprecated since v1.1
+#' @export
+#' @rdname ms_options
+modelStudioOptions <- function(...) {
+  warning("The 'modelStudioOptions()' function is deprecated; please use 'ms_options()' instead.")
+  ret <- ms_options(...)
+  ret
 }

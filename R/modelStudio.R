@@ -2,35 +2,42 @@
 #'
 #' @description
 #' This function computes various (instance and dataset level) model explanations and produces an interactive,
-#' customizable dashboard made with D3.js. It consists of multiple panels for plots with their short descriptions.
-#' Easily save and share the dashboard with others. Tools for model exploration unite with tools for EDA
+#' customisable dashboard. It consists of multiple panels for plots with their short descriptions.
+#' Easily save and share the HTML dashboard with others. Tools for model exploration unite with tools for EDA
 #' (Exploratory Data Analysis) to give a broad overview of the model behavior.
 #'
-#' Theoretical introduction to the plots: \href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis: Explore, Explain and Examine Predictive Models}
+#' Theoretical introduction to the plots:
+#' \href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis: Explore, Explain and Examine Predictive Models}
 #'
 #' @param explainer An \code{explainer} created with \code{DALEX::explain()}.
-#' @param new_observation A new observation with columns that correspond to variables used in the model.
+#' @param new_observation New observations with columns that correspond to variables used in the model.
 #' @param new_observation_y True label for \code{new_observation} (optional).
 #' @param facet_dim Dimensions of the grid. Default is \code{c(2,2)}.
-#' @param time Time in ms. Set animation length. Default is \code{500}.
-#' @param max_features Maximum number of features to be included in Break Down and Shapley Values plots. Default is \code{10}.
-#' @param N Number of observations used for calculation of partial dependence profiles. Default is \code{400}.
-#' @param B Number of random paths used for calculation of Shapley values. Default is \code{15}.
+#' @param time Time in ms. Set the animation length. Default is \code{500}.
+#' @param max_features Maximum number of features to be included in BD and SV plots.
+#'  Default is \code{10}.
+#' @param N Number of observations used for the calculation of PD and AD.
+#'  \code{10*N} is a number of observations used for the calculation of FI.
+#'  Default \code{N} is \code{300}.
+#'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}
+#' @param B Number of permutation rounds used for calculation of SV and FI.
+#'  Default is \code{10}.
+#'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}
 #' @param eda Compute EDA plots. Default is \code{TRUE}.
-#' @param show_info Verbose progress on the console. Default is \code{TRUE}.
+#' @param show_info Verbose a progress on the console. Default is \code{TRUE}.
 #' @param parallel Speed up the computation using \code{parallelMap::parallelMap()}.
-#' See \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
-#' This might interfere with showing progress using \code{show_info}.
-#' @param options Customize \code{modelStudio}. See \code{\link{modelStudioOptions}} and
-#' \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#plot-options}{\bold{vignette}}.
+#'  See \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
+#'  This might interfere with showing progress using \code{show_info}.
+#' @param options Customize \code{modelStudio}. See \code{\link{ms_options}} and
+#'  \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#plot-options}{\bold{vignette}}.
 #' @param viewer Default is \code{external} to display in an external RStudio window.
-#' Use \code{browser} to display in an external browser or
-#' \code{internal} to use the RStudio internal viewer pane for output.
+#'  Use \code{browser} to display in an external browser or
+#'  \code{internal} to use the RStudio internal viewer pane for output.
 #' @param ... Other parameters.
 #'
-#' @return An object of the \code{r2d3} class.
+#' @return An object of the \code{r2d3, htmlwidget, modelStudio} class.
 #'
-#' @importFrom utils head tail setTxtProgressBar txtProgressBar packageVersion
+#' @importFrom utils head tail packageVersion
 #' @importFrom stats aggregate predict quantile IQR
 #' @importFrom grDevices nclass.Sturges
 #' @import progress
@@ -40,8 +47,9 @@
 #' \itemize{
 #'   \item The input object is implemented in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
 #'   \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots
-#' are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
-#'   \item Break Down and Shapley Values plots are implemented in \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
+#'    are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
+#'   \item Break Down and Shapley Values plots are implemented in
+#'    \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
 #' }
 #'
 #' @seealso
@@ -52,7 +60,7 @@
 #' library("DALEX")
 #' library("modelStudio")
 #'
-#' #:# ex1 classification on 'titanic_imputed' dataset
+#' #:# ex1 classification on 'titanic' data
 #'
 #' # fit a model
 #' model_titanic <- glm(survived ~., data = titanic_imputed, family = "binomial")
@@ -69,15 +77,14 @@
 #'
 #' # make a studio for the model
 #' modelStudio(explainer_titanic,
-#'             new_observations,
-#'             N = 100, B = 10) # faster example
+#'             new_observations)
 #'
 #' \donttest{
 #'
-#' #:# ex2 regression on 'apartments' dataset
-#' library("randomForest")
+#' #:# ex2 regression on 'apartments' data
+#' library("ranger")
 #'
-#' model_apartments <- randomForest(m2.price ~. ,data = apartments)
+#' model_apartments <- ranger(m2.price ~. ,data = apartments)
 #'
 #' explainer_apartments <- explain(model_apartments,
 #'                                 data = apartments,
@@ -105,13 +112,11 @@
 #' #:# ex3 xgboost model on 'HR' dataset
 #' library("xgboost")
 #'
-#' # fit a model
 #' HR_matrix <- model.matrix(status == "fired" ~ . -1, HR)
 #'
+#' # fit a model
 #' xgb_matrix <- xgb.DMatrix(HR_matrix, label = HR$status == "fired")
-#'
-#' params <- list(max_depth = 7, objective = "binary:logistic", eval_metric = "auc")
-#'
+#' params <- list(max_depth = 3, objective = "binary:logistic", eval_metric = "auc")
 #' model_HR <- xgb.train(params, xgb_matrix, nrounds = 300)
 #'
 #' # create an explainer for the model
@@ -144,12 +149,12 @@ modelStudio.explainer <- function(explainer,
                                   facet_dim = c(2,2),
                                   time = 500,
                                   max_features = 10,
-                                  N = 400,
-                                  B = 15,
+                                  N = 300,
+                                  B = 10,
                                   eda = TRUE,
                                   show_info = TRUE,
                                   parallel = FALSE,
-                                  options = modelStudioOptions(),
+                                  options = ms_options(),
                                   viewer = "external",
                                   ...) {
 
@@ -198,7 +203,7 @@ modelStudio.explainer <- function(explainer,
   if (show_info) {
     pb <- progress_bar$new(
       format = "  Calculating :what \n    Elapsed time: :elapsedfull ETA::eta", # :percent  [:bar]
-      total = (2*B + 8 + 1)*obs_count + (4*B + 3*B + B) + 1,
+      total = (3*B + 2 + 1)*obs_count + (2*B + 3*B + B) + 1,
       show_after = 0
     )
     pb$tick(0, tokens = list(what = "..."))
@@ -207,8 +212,8 @@ modelStudio.explainer <- function(explainer,
   ## count only once
   fi <- calculate(
     ingredients::feature_importance(
-        model, data, y, predict_function, variables = variable_names, B = B),
-    "ingredients::feature_importance", show_info, pb, 4*B)
+        model, data, y, predict_function, variables = variable_names, B = B, N = 10*N),
+    "ingredients::feature_importance", show_info, pb, 2*B)
 
   which_numerical <- which_variables_are_numeric(data)
 
@@ -275,11 +280,11 @@ modelStudio.explainer <- function(explainer,
       bd <- calculate(
         iBreakDown::local_attributions(
           model, data, predict_function, new_observation, label = label),
-        paste0("iBreakDown::local_attributions (", i, ")"), show_info, pb, 8)
+        paste0("iBreakDown::local_attributions (", i, ")"), show_info, pb, 2)
       sv <- calculate(
         iBreakDown::shap(
           model, data, predict_function, new_observation, label = label, B = B),
-        paste0("iBreakDown::shap (", i, ")"), show_info, pb, 2*B)
+        paste0("iBreakDown::shap (", i, ")"), show_info, pb, 3*B)
       cp <- calculate(
         ingredients::ceteris_paribus(
           model, data, predict_function, new_observation, label = label),
@@ -313,11 +318,11 @@ modelStudio.explainer <- function(explainer,
       bd <- calculate(
         iBreakDown::local_attributions(
           model, data, predict_function, new_observation, label = label),
-        paste0("iBreakDown::local_attributions (", i, ")"), show_info, pb, 8)
+        paste0("iBreakDown::local_attributions (", i, ")"), show_info, pb, 2)
       sv <- calculate(
         iBreakDown::shap(
           model, data, predict_function, new_observation, label = label, B = B),
-        paste0("iBreakDown::shap (", i, ")"), show_info, pb, 2*B)
+        paste0("iBreakDown::shap (", i, ")"), show_info, pb, 3*B)
       cp <- calculate(
         ingredients::ceteris_paribus(
           model, data, predict_function, new_observation, label = label),
@@ -333,7 +338,7 @@ modelStudio.explainer <- function(explainer,
 
   # pack explanation data to json and make hash for htmlwidget
   names(obs_list) <- rownames(obs_data)
-  temp <- jsonlite::toJSON(list(obs_list, fi_data, pd_data, ad_data, fd_data, at_data))
+  temp <- jsonlite::toJSON(list(obs_list, fi_data, pd_data, ad_data, fd_data, at_data), auto_unbox = TRUE)
   widget_id <- paste0("widget-", digest::digest(temp))
 
   # prepare observation data for drop down
@@ -387,6 +392,8 @@ modelStudio.explainer <- function(explainer,
 
   model_studio$x$script <- remove_file_paths(model_studio$x$script, "js")
   model_studio$x$style <- remove_file_paths(model_studio$x$style, "css")
+
+  class(model_studio) <- c(class(model_studio), "modelStudio")
 
   model_studio
 }
@@ -452,7 +459,7 @@ calculate <- function(expr, function_name, show_info = FALSE, pb = NULL, ticks =
     expr
     },
     error = function(e) {
-      warning(paste0("Error occurred in ", function_name, " function: ", e$message))
+      warning(paste0("\nError occurred in ", function_name, " function: ", e$message))
       NULL
   })
 }

@@ -14,12 +14,12 @@ modelStudio(explainer, ...)
   facet_dim = c(2, 2),
   time = 500,
   max_features = 10,
-  N = 400,
-  B = 15,
+  N = 300,
+  B = 10,
   eda = TRUE,
   show_info = TRUE,
   parallel = FALSE,
-  options = modelStudioOptions(),
+  options = ms_options(),
   viewer = "external",
   ...
 )
@@ -29,29 +29,35 @@ modelStudio(explainer, ...)
 
 \item{...}{Other parameters.}
 
-\item{new_observation}{A new observation with columns that correspond to variables used in the model.}
+\item{new_observation}{New observations with columns that correspond to variables used in the model.}
 
 \item{new_observation_y}{True label for \code{new_observation} (optional).}
 
 \item{facet_dim}{Dimensions of the grid. Default is \code{c(2,2)}.}
 
-\item{time}{Time in ms. Set animation length. Default is \code{500}.}
+\item{time}{Time in ms. Set the animation length. Default is \code{500}.}
 
-\item{max_features}{Maximum number of features to be included in Break Down and Shapley Values plots. Default is \code{10}.}
+\item{max_features}{Maximum number of features to be included in BD and SV plots.
+Default is \code{10}.}
 
-\item{N}{Number of observations used for calculation of partial dependence profiles. Default is \code{400}.}
+\item{N}{Number of observations used for the calculation of PD and AD.
+\code{10*N} is a number of observations used for the calculation of FI.
+Default \code{N} is \code{300}.
+See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}}
 
-\item{B}{Number of random paths used for calculation of Shapley values. Default is \code{15}.}
+\item{B}{Number of permutation rounds used for calculation of SV and FI.
+Default is \code{10}.
+See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}}
 
 \item{eda}{Compute EDA plots. Default is \code{TRUE}.}
 
-\item{show_info}{Verbose progress on the console. Default is \code{TRUE}.}
+\item{show_info}{Verbose a progress on the console. Default is \code{TRUE}.}
 
 \item{parallel}{Speed up the computation using \code{parallelMap::parallelMap()}.
 See \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
 This might interfere with showing progress using \code{show_info}.}
 
-\item{options}{Customize \code{modelStudio}. See \code{\link{modelStudioOptions}} and
+\item{options}{Customize \code{modelStudio}. See \code{\link{ms_options}} and
 \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#plot-options}{\bold{vignette}}.}
 
 \item{viewer}{Default is \code{external} to display in an external RStudio window.
@@ -59,21 +65,22 @@ Use \code{browser} to display in an external browser or
 \code{internal} to use the RStudio internal viewer pane for output.}
 }
 \value{
-An object of the \code{r2d3} class.
+An object of the \code{r2d3, htmlwidget, modelStudio} class.
 }
 \description{
 This function computes various (instance and dataset level) model explanations and produces an interactive,
-customizable dashboard made with D3.js. It consists of multiple panels for plots with their short descriptions.
-Easily save and share the dashboard with others. Tools for model exploration unite with tools for EDA
+customisable dashboard. It consists of multiple panels for plots with their short descriptions.
+Easily save and share the HTML dashboard with others. Tools for model exploration unite with tools for EDA
 (Exploratory Data Analysis) to give a broad overview of the model behavior.
 
-Theoretical introduction to the plots: \href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis: Explore, Explain and Examine Predictive Models}
+Theoretical introduction to the plots:
+\href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis: Explore, Explain and Examine Predictive Models}
 }
 \examples{
 library("DALEX")
 library("modelStudio")
 
-#:# ex1 classification on 'titanic_imputed' dataset
+#:# ex1 classification on 'titanic' data
 
 # fit a model
 model_titanic <- glm(survived ~., data = titanic_imputed, family = "binomial")
@@ -90,15 +97,14 @@ rownames(new_observations) <- c("Lucas","James")
 
 # make a studio for the model
 modelStudio(explainer_titanic,
-            new_observations,
-            N = 100, B = 10) # faster example
+            new_observations)
 
 \donttest{
 
-#:# ex2 regression on 'apartments' dataset
-library("randomForest")
+#:# ex2 regression on 'apartments' data
+library("ranger")
 
-model_apartments <- randomForest(m2.price ~. ,data = apartments)
+model_apartments <- ranger(m2.price ~. ,data = apartments)
 
 explainer_apartments <- explain(model_apartments,
                                 data = apartments,
@@ -126,13 +132,11 @@ modelStudio(explainer_apartments,
 #:# ex3 xgboost model on 'HR' dataset
 library("xgboost")
 
-# fit a model
 HR_matrix <- model.matrix(status == "fired" ~ . -1, HR)
 
+# fit a model
 xgb_matrix <- xgb.DMatrix(HR_matrix, label = HR$status == "fired")
-
-params <- list(max_depth = 7, objective = "binary:logistic", eval_metric = "auc")
-
+params <- list(max_depth = 3, objective = "binary:logistic", eval_metric = "auc")
 model_HR <- xgb.train(params, xgb_matrix, nrounds = 300)
 
 # create an explainer for the model
@@ -155,8 +159,9 @@ modelStudio(explainer_HR,
 \itemize{
   \item The input object is implemented in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
   \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots
-are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
-  \item Break Down and Shapley Values plots are implemented in \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
+   are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
+  \item Break Down and Shapley Values plots are implemented in
+   \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
 }
 }
 \seealso{

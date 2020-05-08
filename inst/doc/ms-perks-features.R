@@ -8,7 +8,7 @@ knitr::opts_chunk$set(
 
 ## ----results="hide"-----------------------------------------------------------
 train <- DALEX::HR
-train$fired <- ifelse(train$status == "fired", 1, 0)
+train$fired <- as.factor(ifelse(train$status == "fired", 1, 0))
 train$status <- NULL
 
 head(train)
@@ -17,9 +17,9 @@ head(train)
 knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 
 ## ----results="hide", eval = FALSE---------------------------------------------
-#  # fit a randomForest model
-#  library("randomForest")
-#  model <- randomForest(fired ~., data = train)
+#  # fit a ranger model
+#  library("ranger")
+#  model <- ranger(fired ~., data = train, probability = TRUE)
 #  
 #  # prepare validation dataset
 #  test <- DALEX::HR_test[1:1000,]
@@ -68,7 +68,7 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 #  
 #  # slower, more precise
 #  modelStudio(explainer,
-#              N = 800, B = 25)
+#              N = 500, B = 15)
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  modelStudio(explainer,
@@ -97,7 +97,7 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  # set additional graphical parameters
-#  new_options <- modelStudioOptions(
+#  new_options <- ms_options(
 #    show_subtitle = TRUE,
 #    bd_subtitle = "Hello World",
 #    line_size = 5,
@@ -112,14 +112,40 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 #              options = new_options)
 
 ## ----eval = FALSE-------------------------------------------------------------
+#  old_ms <- modelStudio(explainer)
+#  old_ms
+#  
+#  # update the options
+#  new_ms <- ms_update_options(old_ms,
+#                              time = 0,
+#                              facet_dim = c(1,2),
+#                              margin_left = 150)
+#  new_ms
+
+## ----eval = FALSE-------------------------------------------------------------
+#  old_ms <- modelStudio(explainer)
+#  old_ms
+#  
+#  # add new observations
+#  plus_ms <- ms_update_observations(old_ms,
+#                                    explainer,
+#                                    new_observation = test[101:102,])
+#  plus_ms
+#  
+#  # overwrite old observations
+#  new_ms <- ms_update_observations(old_ms,
+#                                   explainer,
+#                                   new_observation = test[103:104,],
+#                                   overwrite = TRUE)
+#  new_ms
+
+## ----eval = FALSE-------------------------------------------------------------
 #  library(DALEXtra)
 #  library(mlr)
 #  
 #  # fit a model
-#  task <- makeRegrTask(id = "task", data = train, target = "fired")
-#  
-#  learner <- makeLearner("regr.randomForest", par.vals = list(ntree = 300), predict.type = "response")
-#  
+#  task <- makeClassifTask(id = "task", data = train, target = "fired")
+#  learner <- makeLearner("classif.ranger", predict.type = "prob")
 #  model <- train(learner, task)
 #  
 #  # create an explainer for the model
@@ -129,6 +155,5 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 #                               label = "mlr")
 #  
 #  # make a studio for the model
-#  modelStudio(explainer_mlr,
-#              B = 10)
+#  modelStudio(explainer_mlr)
 

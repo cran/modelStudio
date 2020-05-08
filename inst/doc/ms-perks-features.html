@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hubert Baniecki" />
 
-<meta name="date" content="2020-04-12" />
+<meta name="date" content="2020-05-08" />
 
 <title>modelStudio - perks and features</title>
 
@@ -315,14 +315,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">modelStudio - perks and features</h1>
 <h4 class="author">Hubert Baniecki</h4>
-<h4 class="date">2020-04-12</h4>
+<h4 class="date">2020-05-08</h4>
 
 
 
-<p><code>modelStudio::modelStudio</code> computes various (instance and dataset level) model explanations and produces an interactive, customizable dashboard made with D3.js. It consists of multiple panels for plots with their short descriptions. Easily save and share the dashboard with others. Tools for model exploration unite with tools for EDA (Exploratory Data Analysis) to give a broad overview of the model behavior.</p>
+<p><code>modelStudio::modelStudio</code> computes various (instance and dataset level) model explanations and produces an interactive, customisable dashboard. It consists of multiple panels for plots with their short descriptions. Easily save and share the HTML dashboard with others. Tools for model exploration unite with tools for EDA (Exploratory Data Analysis) to give a broad overview of the model behavior.</p>
 <p>Let’s use <code>HR</code> dataset to explore <code>modelStudio</code> parameters:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>train &lt;-<span class="st"> </span>DALEX<span class="op">::</span>HR</span>
-<span id="cb1-2"><a href="#cb1-2"></a>train<span class="op">$</span>fired &lt;-<span class="st"> </span><span class="kw">ifelse</span>(train<span class="op">$</span>status <span class="op">==</span><span class="st"> &quot;fired&quot;</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a>train<span class="op">$</span>fired &lt;-<span class="st"> </span><span class="kw">as.factor</span>(<span class="kw">ifelse</span>(train<span class="op">$</span>status <span class="op">==</span><span class="st"> &quot;fired&quot;</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
 <span id="cb1-3"><a href="#cb1-3"></a>train<span class="op">$</span>status &lt;-<span class="st"> </span><span class="ot">NULL</span></span>
 <span id="cb1-4"><a href="#cb1-4"></a></span>
 <span id="cb1-5"><a href="#cb1-5"></a><span class="kw">head</span>(train)</span></code></pre></div>
@@ -335,7 +335,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <th align="right">hours</th>
 <th align="right">evaluation</th>
 <th align="right">salary</th>
-<th align="right">fired</th>
+<th align="left">fired</th>
 </tr>
 </thead>
 <tbody>
@@ -345,7 +345,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <td align="right">41.89</td>
 <td align="right">3</td>
 <td align="right">1</td>
-<td align="right">1</td>
+<td align="left">1</td>
 </tr>
 <tr class="even">
 <td align="left">female</td>
@@ -353,7 +353,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <td align="right">36.34</td>
 <td align="right">2</td>
 <td align="right">5</td>
-<td align="right">1</td>
+<td align="left">1</td>
 </tr>
 <tr class="odd">
 <td align="left">male</td>
@@ -361,7 +361,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <td align="right">36.82</td>
 <td align="right">3</td>
 <td align="right">0</td>
-<td align="right">1</td>
+<td align="left">1</td>
 </tr>
 <tr class="even">
 <td align="left">female</td>
@@ -369,7 +369,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <td align="right">38.96</td>
 <td align="right">3</td>
 <td align="right">2</td>
-<td align="right">1</td>
+<td align="left">1</td>
 </tr>
 <tr class="odd">
 <td align="left">male</td>
@@ -377,7 +377,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <td align="right">62.15</td>
 <td align="right">5</td>
 <td align="right">3</td>
-<td align="right">0</td>
+<td align="left">0</td>
 </tr>
 <tr class="even">
 <td align="left">male</td>
@@ -385,14 +385,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <td align="right">69.54</td>
 <td align="right">2</td>
 <td align="right">0</td>
-<td align="right">1</td>
+<td align="left">1</td>
 </tr>
 </tbody>
 </table>
-<p>Prepare <code>HR_test</code> data and a <code>randomForest</code> model for the explainer:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># fit a randomForest model</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">library</span>(<span class="st">&quot;randomForest&quot;</span>)</span>
-<span id="cb2-3"><a href="#cb2-3"></a>model &lt;-<span class="st"> </span><span class="kw">randomForest</span>(fired <span class="op">~</span>., <span class="dt">data =</span> train)</span>
+<p>Prepare <code>HR_test</code> data and a <code>ranger</code> model for the explainer:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># fit a ranger model</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">library</span>(<span class="st">&quot;ranger&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3"></a>model &lt;-<span class="st"> </span><span class="kw">ranger</span>(fired <span class="op">~</span>., <span class="dt">data =</span> train, <span class="dt">probability =</span> <span class="ot">TRUE</span>)</span>
 <span id="cb2-4"><a href="#cb2-4"></a></span>
 <span id="cb2-5"><a href="#cb2-5"></a><span class="co"># prepare validation dataset</span></span>
 <span id="cb2-6"><a href="#cb2-6"></a>test &lt;-<span class="st"> </span>DALEX<span class="op">::</span>HR_test[<span class="dv">1</span><span class="op">:</span><span class="dv">1000</span>,]</span>
@@ -444,14 +444,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="more-calculations-means-more-time" class="section level3">
 <h3>more calculations means more time</h3>
-<p><code>N</code> is a number of observations used for calculation of <a href="https://pbiecek.github.io/ema/partialDependenceProfiles.html">Partial Dependence</a> and <a href="https://pbiecek.github.io/ema/accumulatedLocalProfiles.html">Accumulated Dependence</a> Profiles. <code>B</code> is a number of permutation rounds used for calculation of <a href="https://pbiecek.github.io/ema/shapley.html">Shapley Values</a> and <a href="https://pbiecek.github.io/ema/featureImportance.html">Feature Importance</a>. Decrease <code>N</code> and <code>B</code> parameters to lower the computation time or increase them to get more accurate empirical results.</p>
+<p><code>N</code> is a number of observations used for calculation of <a href="https://pbiecek.github.io/ema/partialDependenceProfiles.html">Partial Dependence</a> and <a href="https://pbiecek.github.io/ema/accumulatedLocalProfiles.html">Accumulated Dependence</a> Profiles. <code>10*N</code> is a number of observations used for calculation of <a href="https://pbiecek.github.io/ema/featureImportance.html">Feature Importance</a>. <code>B</code> is a number of permutation rounds used for calculation of <a href="https://pbiecek.github.io/ema/shapley.html">Shapley Values</a> and <a href="https://pbiecek.github.io/ema/featureImportance.html">Feature Importance</a>. Decrease <code>N</code> and <code>B</code> parameters to lower the computation time or increase them to get more accurate empirical results.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co"># faster, less precise</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="kw">modelStudio</span>(explainer,</span>
 <span id="cb6-3"><a href="#cb6-3"></a>            <span class="dt">N =</span> <span class="dv">200</span>, <span class="dt">B =</span> <span class="dv">5</span>)</span>
 <span id="cb6-4"><a href="#cb6-4"></a></span>
 <span id="cb6-5"><a href="#cb6-5"></a><span class="co"># slower, more precise</span></span>
 <span id="cb6-6"><a href="#cb6-6"></a><span class="kw">modelStudio</span>(explainer,</span>
-<span id="cb6-7"><a href="#cb6-7"></a>            <span class="dt">N =</span> <span class="dv">800</span>, <span class="dt">B =</span> <span class="dv">25</span>)</span></code></pre></div>
+<span id="cb6-7"><a href="#cb6-7"></a>            <span class="dt">N =</span> <span class="dv">500</span>, <span class="dt">B =</span> <span class="dv">15</span>)</span></code></pre></div>
 </div>
 <div id="no-eda-mode" class="section level3">
 <h3>no EDA mode</h3>
@@ -490,11 +490,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb10-11"><a href="#cb10-11"></a>            <span class="dt">parallel =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 <hr />
 </div>
-<div id="plot-options" class="section level2">
-<h2>plot options</h2>
-<p>Customize some of <code>modelStudio</code> looks by overwriting default options returned by the <code>modelStudioOptions()</code> function. Full list of options: <a href="http://modelstudio.drwhy.ai/reference/modelStudioOptions.html">documentation</a>.</p>
+<div id="additional-options" class="section level2">
+<h2>additional options</h2>
+<p>Customize some of <code>modelStudio</code> looks by overwriting default options returned by the <code>ms_options()</code> function. Full list of options: <a href="http://modelstudio.drwhy.ai/reference/ms_options.html">documentation</a>.</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># set additional graphical parameters</span></span>
-<span id="cb11-2"><a href="#cb11-2"></a>new_options &lt;-<span class="st"> </span><span class="kw">modelStudioOptions</span>(</span>
+<span id="cb11-2"><a href="#cb11-2"></a>new_options &lt;-<span class="st"> </span><span class="kw">ms_options</span>(</span>
 <span id="cb11-3"><a href="#cb11-3"></a>  <span class="dt">show_subtitle =</span> <span class="ot">TRUE</span>,</span>
 <span id="cb11-4"><a href="#cb11-4"></a>  <span class="dt">bd_subtitle =</span> <span class="st">&quot;Hello World&quot;</span>,</span>
 <span id="cb11-5"><a href="#cb11-5"></a>  <span class="dt">line_size =</span> <span class="dv">5</span>,</span>
@@ -507,30 +507,56 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb11-12"><a href="#cb11-12"></a></span>
 <span id="cb11-13"><a href="#cb11-13"></a><span class="kw">modelStudio</span>(explainer,</span>
 <span id="cb11-14"><a href="#cb11-14"></a>            <span class="dt">options =</span> new_options)</span></code></pre></div>
+<p>All visual options can be changed after the calculations using <code>ms_update_options()</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>old_ms &lt;-<span class="st"> </span><span class="kw">modelStudio</span>(explainer)</span>
+<span id="cb12-2"><a href="#cb12-2"></a>old_ms</span>
+<span id="cb12-3"><a href="#cb12-3"></a></span>
+<span id="cb12-4"><a href="#cb12-4"></a><span class="co"># update the options</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>new_ms &lt;-<span class="st"> </span><span class="kw">ms_update_options</span>(old_ms,</span>
+<span id="cb12-6"><a href="#cb12-6"></a>                            <span class="dt">time =</span> <span class="dv">0</span>,</span>
+<span id="cb12-7"><a href="#cb12-7"></a>                            <span class="dt">facet_dim =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>),</span>
+<span id="cb12-8"><a href="#cb12-8"></a>                            <span class="dt">margin_left =</span> <span class="dv">150</span>)</span>
+<span id="cb12-9"><a href="#cb12-9"></a>new_ms</span></code></pre></div>
 <hr />
+</div>
+<div id="update-observations" class="section level2">
+<h2>update observations</h2>
+<p>Use <code>ms_update_observations()</code> to add more observations with their local explanations to the <code>modelStudio</code>.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>old_ms &lt;-<span class="st"> </span><span class="kw">modelStudio</span>(explainer)</span>
+<span id="cb13-2"><a href="#cb13-2"></a>old_ms</span>
+<span id="cb13-3"><a href="#cb13-3"></a></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="co"># add new observations</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a>plus_ms &lt;-<span class="st"> </span><span class="kw">ms_update_observations</span>(old_ms,</span>
+<span id="cb13-6"><a href="#cb13-6"></a>                                  explainer,</span>
+<span id="cb13-7"><a href="#cb13-7"></a>                                  <span class="dt">new_observation =</span> test[<span class="dv">101</span><span class="op">:</span><span class="dv">102</span>,])</span>
+<span id="cb13-8"><a href="#cb13-8"></a>plus_ms</span>
+<span id="cb13-9"><a href="#cb13-9"></a></span>
+<span id="cb13-10"><a href="#cb13-10"></a><span class="co"># overwrite old observations</span></span>
+<span id="cb13-11"><a href="#cb13-11"></a>new_ms &lt;-<span class="st"> </span><span class="kw">ms_update_observations</span>(old_ms,</span>
+<span id="cb13-12"><a href="#cb13-12"></a>                                 explainer,</span>
+<span id="cb13-13"><a href="#cb13-13"></a>                                 <span class="dt">new_observation =</span> test[<span class="dv">103</span><span class="op">:</span><span class="dv">104</span>,],</span>
+<span id="cb13-14"><a href="#cb13-14"></a>                                 <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb13-15"><a href="#cb13-15"></a>new_ms</span></code></pre></div>
 </div>
 <div id="dalextra" class="section level2">
 <h2>DALEXtra</h2>
 <p>Use <code>explain_*()</code> functions from the <a href="https://github.com/ModelOriented/DALEXtra">DALEXtra</a> package to explain various models. Bellow basic example of making <code>modelStudio</code> for a <code>mlr</code> model using <code>explain_mlr()</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">library</span>(DALEXtra)</span>
-<span id="cb12-2"><a href="#cb12-2"></a><span class="kw">library</span>(mlr)</span>
-<span id="cb12-3"><a href="#cb12-3"></a></span>
-<span id="cb12-4"><a href="#cb12-4"></a><span class="co"># fit a model</span></span>
-<span id="cb12-5"><a href="#cb12-5"></a>task &lt;-<span class="st"> </span><span class="kw">makeRegrTask</span>(<span class="dt">id =</span> <span class="st">&quot;task&quot;</span>, <span class="dt">data =</span> train, <span class="dt">target =</span> <span class="st">&quot;fired&quot;</span>)</span>
-<span id="cb12-6"><a href="#cb12-6"></a></span>
-<span id="cb12-7"><a href="#cb12-7"></a>learner &lt;-<span class="st"> </span><span class="kw">makeLearner</span>(<span class="st">&quot;regr.randomForest&quot;</span>, <span class="dt">par.vals =</span> <span class="kw">list</span>(<span class="dt">ntree =</span> <span class="dv">300</span>), <span class="dt">predict.type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb12-8"><a href="#cb12-8"></a></span>
-<span id="cb12-9"><a href="#cb12-9"></a>model &lt;-<span class="st"> </span><span class="kw">train</span>(learner, task)</span>
-<span id="cb12-10"><a href="#cb12-10"></a></span>
-<span id="cb12-11"><a href="#cb12-11"></a><span class="co"># create an explainer for the model</span></span>
-<span id="cb12-12"><a href="#cb12-12"></a>explainer_mlr &lt;-<span class="st"> </span><span class="kw">explain_mlr</span>(model,</span>
-<span id="cb12-13"><a href="#cb12-13"></a>                             <span class="dt">data =</span> test,</span>
-<span id="cb12-14"><a href="#cb12-14"></a>                             <span class="dt">y =</span> test<span class="op">$</span>fired,</span>
-<span id="cb12-15"><a href="#cb12-15"></a>                             <span class="dt">label =</span> <span class="st">&quot;mlr&quot;</span>)</span>
-<span id="cb12-16"><a href="#cb12-16"></a></span>
-<span id="cb12-17"><a href="#cb12-17"></a><span class="co"># make a studio for the model</span></span>
-<span id="cb12-18"><a href="#cb12-18"></a><span class="kw">modelStudio</span>(explainer_mlr,</span>
-<span id="cb12-19"><a href="#cb12-19"></a>            <span class="dt">B =</span> <span class="dv">10</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">library</span>(DALEXtra)</span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="kw">library</span>(mlr)</span>
+<span id="cb14-3"><a href="#cb14-3"></a></span>
+<span id="cb14-4"><a href="#cb14-4"></a><span class="co"># fit a model</span></span>
+<span id="cb14-5"><a href="#cb14-5"></a>task &lt;-<span class="st"> </span><span class="kw">makeClassifTask</span>(<span class="dt">id =</span> <span class="st">&quot;task&quot;</span>, <span class="dt">data =</span> train, <span class="dt">target =</span> <span class="st">&quot;fired&quot;</span>)</span>
+<span id="cb14-6"><a href="#cb14-6"></a>learner &lt;-<span class="st"> </span><span class="kw">makeLearner</span>(<span class="st">&quot;classif.ranger&quot;</span>, <span class="dt">predict.type =</span> <span class="st">&quot;prob&quot;</span>)</span>
+<span id="cb14-7"><a href="#cb14-7"></a>model &lt;-<span class="st"> </span><span class="kw">train</span>(learner, task)</span>
+<span id="cb14-8"><a href="#cb14-8"></a></span>
+<span id="cb14-9"><a href="#cb14-9"></a><span class="co"># create an explainer for the model</span></span>
+<span id="cb14-10"><a href="#cb14-10"></a>explainer_mlr &lt;-<span class="st"> </span><span class="kw">explain_mlr</span>(model,</span>
+<span id="cb14-11"><a href="#cb14-11"></a>                             <span class="dt">data =</span> test,</span>
+<span id="cb14-12"><a href="#cb14-12"></a>                             <span class="dt">y =</span> test<span class="op">$</span>fired,</span>
+<span id="cb14-13"><a href="#cb14-13"></a>                             <span class="dt">label =</span> <span class="st">&quot;mlr&quot;</span>)</span>
+<span id="cb14-14"><a href="#cb14-14"></a></span>
+<span id="cb14-15"><a href="#cb14-15"></a><span class="co"># make a studio for the model</span></span>
+<span id="cb14-16"><a href="#cb14-16"></a><span class="kw">modelStudio</span>(explainer_mlr)</span></code></pre></div>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>

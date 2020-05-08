@@ -18,13 +18,16 @@ knitr::opts_chunk$set(
 )
 ```
 
-`modelStudio::modelStudio` computes various (instance and dataset level) model explanations and produces an interactive, customizable dashboard made with D3.js. It consists of multiple panels for plots with their short descriptions. Easily save and share the dashboard with others. Tools for model exploration unite with tools for EDA (Exploratory Data Analysis) to give a broad overview of the model behavior.
+`modelStudio::modelStudio` computes various (instance and dataset level) model explanations and produces
+an interactive, customisable dashboard. It consists of multiple panels for plots with their short descriptions.
+Easily save and share the HTML dashboard with others. Tools for model exploration unite with tools for
+EDA (Exploratory Data Analysis) to give a broad overview of the model behavior.
 
 Let's use `HR` dataset to explore `modelStudio` parameters:
 
 ```{r results="hide"}
 train <- DALEX::HR
-train$fired <- ifelse(train$status == "fired", 1, 0)
+train$fired <- as.factor(ifelse(train$status == "fired", 1, 0))
 train$status <- NULL
 
 head(train)
@@ -34,12 +37,12 @@ head(train)
 knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 ```
 
-Prepare `HR_test` data and a `randomForest` model for the explainer:
+Prepare `HR_test` data and a `ranger` model for the explainer:
 
 ```{r results="hide", eval = FALSE}
-# fit a randomForest model
-library("randomForest")
-model <- randomForest(fired ~., data = train)
+# fit a ranger model
+library("ranger")
+model <- ranger(fired ~., data = train, probability = TRUE)
 
 # prepare validation dataset
 test <- DALEX::HR_test[1:1000,]
@@ -110,7 +113,9 @@ modelStudio(explainer,
 
 `N` is a number of observations used for calculation of
 [Partial Dependence](https://pbiecek.github.io/ema/partialDependenceProfiles.html)
-and [Accumulated Dependence](https://pbiecek.github.io/ema/accumulatedLocalProfiles.html) Profiles.
+and [Accumulated Dependence](https://pbiecek.github.io/ema/accumulatedLocalProfiles.html) Profiles. 
+`10*N` is a number of observations used for calculation of
+[Feature Importance](https://pbiecek.github.io/ema/featureImportance.html).
 `B` is a number of permutation rounds used for calculation of
 [Shapley Values](https://pbiecek.github.io/ema/shapley.html) and
 [Feature Importance](https://pbiecek.github.io/ema/featureImportance.html).
@@ -124,7 +129,7 @@ modelStudio(explainer,
 
 # slower, more precise
 modelStudio(explainer,
-            N = 800, B = 25)
+            N = 500, B = 15)
 ```
 
 ### no EDA mode
@@ -148,7 +153,8 @@ modelStudio(explainer,
 ### viewer or browser?
 
 Change `viewer` parameter to set where to display `modelStudio`.
-Best described in `r2d3` documentation: [`r2d3 viewer argument`](https://rstudio.github.io/r2d3/articles/visualization_options.html#viewer).
+Best described in `r2d3` documentation:
+[`r2d3 viewer argument`](https://rstudio.github.io/r2d3/articles/visualization_options.html#viewer).
 
 ```{r eval = FALSE}
 modelStudio(explainer,
@@ -183,15 +189,15 @@ modelStudio(explainer,
 
 --------------------------------------------------------------------
 
-## plot options
+## additional options
 
 Customize some of `modelStudio` looks by overwriting default options returned
-by the `modelStudioOptions()` function. Full list of options:
-[documentation](http://modelstudio.drwhy.ai/reference/modelStudioOptions.html).
+by the `ms_options()` function. Full list of options:
+[documentation](http://modelstudio.drwhy.ai/reference/ms_options.html).
 
 ```{r eval = FALSE}
 # set additional graphical parameters
-new_options <- modelStudioOptions(
+new_options <- ms_options(
   show_subtitle = TRUE,
   bd_subtitle = "Hello World",
   line_size = 5,
@@ -206,22 +212,57 @@ modelStudio(explainer,
             options = new_options)
 ```
 
+All visual options can be changed after the calculations using `ms_update_options()`.
+
+```{r eval = FALSE}
+old_ms <- modelStudio(explainer)
+old_ms
+
+# update the options
+new_ms <- ms_update_options(old_ms,
+                            time = 0,
+                            facet_dim = c(1,2),
+                            margin_left = 150)
+new_ms
+```
+
 -------------------------------------------------------------------
+
+## update observations
+
+Use `ms_update_observations()` to add more observations with their local explanations to the `modelStudio`.
+
+```{r eval = FALSE}
+old_ms <- modelStudio(explainer)
+old_ms
+
+# add new observations
+plus_ms <- ms_update_observations(old_ms,
+                                  explainer,
+                                  new_observation = test[101:102,])
+plus_ms
+
+# overwrite old observations
+new_ms <- ms_update_observations(old_ms,
+                                 explainer,
+                                 new_observation = test[103:104,],
+                                 overwrite = TRUE)
+new_ms
+```
 
 ## DALEXtra
 
 Use `explain_*()` functions from the [DALEXtra](https://github.com/ModelOriented/DALEXtra)
-package to explain various models. Bellow basic example of making `modelStudio` for a `mlr` model using `explain_mlr()`.
+package to explain various models. Bellow basic example of making `modelStudio` for
+a `mlr` model using `explain_mlr()`.
 
 ```{r eval = FALSE}
 library(DALEXtra)
 library(mlr)
 
 # fit a model
-task <- makeRegrTask(id = "task", data = train, target = "fired")
-
-learner <- makeLearner("regr.randomForest", par.vals = list(ntree = 300), predict.type = "response")
-
+task <- makeClassifTask(id = "task", data = train, target = "fired")
+learner <- makeLearner("classif.ranger", predict.type = "prob")
 model <- train(learner, task)
 
 # create an explainer for the model
@@ -231,8 +272,7 @@ explainer_mlr <- explain_mlr(model,
                              label = "mlr")
 
 # make a studio for the model
-modelStudio(explainer_mlr,
-            B = 10)
+modelStudio(explainer_mlr)
 ```
 
 ## References
