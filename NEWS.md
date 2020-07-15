@@ -1,6 +1,12 @@
 # modelStudio (development)
 * ...
 
+# modelStudio 1.2.0
+* remove redundant documentation resources so that the package weights less
+* add a second dropdown list for variable change
+* fix check class warning
+* add `stringsAsFactors=TRUE` where `data.frame` is used
+
 # modelStudio 1.1.0
 * rename `modelStudioOptions()` to `ms_options()`
 * add new `ms_update_options()` function that updates the options of a `modelStudio` object

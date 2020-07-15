@@ -3,11 +3,14 @@
 #' @description
 #' This function computes various (instance and dataset level) model explanations and produces an interactive,
 #' customisable dashboard. It consists of multiple panels for plots with their short descriptions.
-#' Easily save and share the HTML dashboard with others. Tools for model exploration unite with tools for EDA
-#' (Exploratory Data Analysis) to give a broad overview of the model behavior.
+#' Easily save and share the HTML dashboard with others. Tools for model exploration unite with tools for
+#' Exploratory Data Analysis to give a broad overview of the model behavior.
 #'
 #' Theoretical introduction to the plots:
 #' \href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis: Explore, Explain and Examine Predictive Models}
+#'
+#' Displayed variable can be changed by clicking on the bars of plots or with the first dropdown list,
+#'  and observation can be changed with the second dropdown list.
 #'
 #' @param explainer An \code{explainer} created with \code{DALEX::explain()}.
 #' @param new_observation New observations with columns that correspond to variables used in the model.
@@ -176,15 +179,15 @@ modelStudio.explainer <- function(explainer,
 
   } else if (is.null(dim(new_observation))) {
     warning("`new_observation` argument is not a data.frame nor a matrix, coerced to data.frame\n")
-    new_observation <- as.data.frame(new_observation)
+    new_observation <- as.data.frame(new_observation, stringsAsFactors=TRUE)
 
   } else if (is.null(rownames(new_observation))) {
     rownames(new_observation) <- 1:nrow(new_observation)
   }
 
   check_single_prediction <- try(predict_function(model, new_observation[1,, drop = FALSE]), silent = TRUE)
-  if (class(check_single_prediction)[1] == "try-error") {
-    stop("`predict_function` returns an error when executed on `new_observation[1,, drop = FALSE]` \n")
+  if ("try-error" %in% class(check_single_prediction)) {
+    stop("`explainer$predict_function` returns an error when executed on `new_observation[1,, drop = FALSE]` \n")
   }
   #:#
 
@@ -345,7 +348,8 @@ modelStudio.explainer <- function(explainer,
   between <- " - "
   if (is.null(new_observation_y)) new_observation_y <- between <- ""
   drop_down_data <- as.data.frame(cbind(rownames(obs_data),
-                                        paste0(rownames(obs_data), between, new_observation_y)))
+                                        paste0(rownames(obs_data), between, new_observation_y)),
+                                  stringsAsFactors=TRUE)
   colnames(drop_down_data) <- c("id", "text")
 
   # prepare footer text and ms title
