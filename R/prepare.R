@@ -1,6 +1,6 @@
 prepare_break_down <- function(x, max_features = 10, baseline = NA, digits = 3,
-                               rounding_function = round, margin = 0.2) {
-  ### This function returns object needed to plot BreakDown in D3 ###
+                               rounding_function = round, margin = 0.2, ...) {
+  ### Return the object for the BreakDown plot ###
 
   if (is.null(x)) return(NULL)
 
@@ -37,7 +37,7 @@ prepare_break_down <- function(x, max_features = 10, baseline = NA, digits = 3,
 
 prepare_break_down_df <- function(x, max_features = 10, baseline = NA, digits = 3,
                                   rounding_function = round) {
-  ### This function returns data as DF needed to plot BreakDown in D3 ###
+  ### This function returns data as DF needed for the BreakDown plot ###
 
   # fix df
   x[,'variable'] <- as.character(x[,'variable'])
@@ -92,9 +92,11 @@ prepare_break_down_df <- function(x, max_features = 10, baseline = NA, digits = 
   x
 }
 
-prepare_shapley_values <- function(x, max_features = 10, show_boxplot = TRUE, baseline = NA,
-                                   digits = 3, rounding_function = round, margin = 0.15) {
-  ### This function returns object needed to plot ShapleyValues in D3 ###
+prepare_shapley_values <- function(x, max_features = 10, show_boxplot = TRUE,
+                                   baseline = NA,
+                                   digits = 3, rounding_function = round,
+                                   margin = 0.15, ...) {
+  ### Return the the object for the ShapleyValues plot ###
 
   if (is.null(x)) return(NULL)
   B <- NULL
@@ -115,17 +117,17 @@ prepare_shapley_values <- function(x, max_features = 10, show_boxplot = TRUE, ba
       variable_name = levels(as.factor(x_df$variable_name)),
       min = as.numeric(tapply(x_df$contribution, x_df$variable_name, min, na.rm = TRUE)),
       q1 = as.numeric(tapply(x_df$contribution, x_df$variable_name, quantile, 0.25, na.rm = TRUE)),
+      median = as.numeric(tapply(x_df$contribution, x_df$variable_name, median, na.rm = TRUE)),
       q3 = as.numeric(tapply(x_df$contribution, x_df$variable_name, quantile, 0.75, na.rm = TRUE)),
       max = as.numeric(tapply(x_df$contribution, x_df$variable_name, max, na.rm = TRUE)),
       iqr = as.numeric(tapply(x_df$contribution, x_df$variable_name, IQR, na.rm = TRUE)),
       stringsAsFactors=TRUE
     )
 
-    x_stats$min <- pmax(x_stats$min, x_stats$q1 - 1.5*x_stats$iqr) + baseline
-    x_stats$max <- pmin(x_stats$max, x_stats$q3 + 1.5*x_stats$iqr) + baseline
-    x_stats$q1 <- x_stats$q1 + baseline
-    x_stats$q3 <- x_stats$q3 + baseline
+    x_stats$min <- pmax(x_stats$min, x_stats$q1 - 1.5*x_stats$iqr)
+    x_stats$max <- pmin(x_stats$max, x_stats$q3 + 1.5*x_stats$iqr)
     x_stats$iqr <- NULL
+    x_stats[,-1] <- x_stats[,-1] + baseline
 
     new_x <- merge(new_x, x_stats, by = "variable_name", sort = FALSE)
     #:#
@@ -161,7 +163,7 @@ prepare_shapley_values <- function(x, max_features = 10, show_boxplot = TRUE, ba
 
 prepare_shapley_values_df <- function(x, max_features = 10, baseline = NA, prediction,
                                       digits = 3, rounding_function = round) {
-  ### This function returns data as DF needed to plot ShapleyValues in D3 ###
+  ### Return the data as DF needed for the ShapleyValues plot ###
 
   x <- as.data.frame(x, stringsAsFactors=TRUE)
   rownames(x) <- NULL
@@ -205,7 +207,7 @@ prepare_shapley_values_df <- function(x, max_features = 10, baseline = NA, predi
 }
 
 prepare_ceteris_paribus <- function(x, variables = NULL) {
-  ### This function returns object needed to plot CeterisParibus in D3 ###
+  ### Return the object for the CeterisParibus plot ###
 
   if (is.null(x)) return(NULL)
 
@@ -284,8 +286,10 @@ prepare_ceteris_paribus <- function(x, variables = NULL) {
 }
 
 prepare_feature_importance <- function(x, max_features = 10, show_boxplot = TRUE,
-                                       margin = 0.15, digits = 3, rounding_function = round) {
-  ### This function returns object needed to plot FeatureImportance in D3 ###
+                                       x_title = NULL,
+                                       margin = 0.15, digits = 3, rounding_function = round,
+                                       ...) {
+  ### Return the object for the FeatureImportance plot ###
 
   if (is.null(x)) return(NULL)
   permutation <- NULL
@@ -319,6 +323,7 @@ prepare_feature_importance <- function(x, max_features = 10, show_boxplot = TRUE
       variable = levels(as.factor(x_df$variable)),
       min = as.numeric(tapply(x_df$dropout_loss, x_df$variable, min, na.rm = TRUE)),
       q1 = as.numeric(tapply(x_df$dropout_loss, x_df$variable, quantile, 0.25, na.rm = TRUE)),
+      median = as.numeric(tapply(x_df$dropout_loss, x_df$variable, median, na.rm = TRUE)),
       q3 = as.numeric(tapply(x_df$dropout_loss, x_df$variable, quantile, 0.75, na.rm = TRUE)),
       max = as.numeric(tapply(x_df$dropout_loss, x_df$variable, max, na.rm = TRUE)),
       iqr = as.numeric(tapply(x_df$dropout_loss, x_df$variable, IQR, na.rm = TRUE)),
@@ -352,6 +357,7 @@ prepare_feature_importance <- function(x, max_features = 10, show_boxplot = TRUE
   ret$x <- new_x
   ret$m <- m
   ret$x_min_max <- min_max
+  ret$x_title <- ifelse(is.null(x_title), "drop-out loss", x_title)
   ret$desc <- data.frame(type = "desc",
                          text = gsub("\n","</br>", desc))
 
@@ -359,7 +365,7 @@ prepare_feature_importance <- function(x, max_features = 10, show_boxplot = TRUE
 }
 
 prepare_partial_dependence <- function(x, y, variables = NULL) {
-  ### This function returns object needed to plot PartialDependence in D3 ###
+  ### Return the object for the PartialDependence plot ###
 
   if (is.null(x) & is.null(y)) return(NULL)
 
@@ -443,7 +449,7 @@ prepare_partial_dependence <- function(x, y, variables = NULL) {
 }
 
 prepare_accumulated_dependence <- function(x, y, variables = NULL) {
-  ### This function returns object needed to plot AccumulatedDependence in D3 ###
+  ### Return the object for the AccumulatedDependence plot ###
 
   if (is.null(x) & is.null(y)) return(NULL)
 
@@ -530,8 +536,8 @@ prepare_accumulated_dependence <- function(x, y, variables = NULL) {
   ret
 }
 
-prepare_feature_distribution <- function(x, y, variables = NULL) {
-  ### This function returns object needed to plot FeatureDistribution in D3 ###
+prepare_feature_distribution <- function(x, y, variables = NULL, residuals = NULL) {
+  ### Return the object for the FeatureDistribution plot ###
 
   if (is.null(x) | is.null(y)) return(NULL)
 
@@ -545,28 +551,35 @@ prepare_feature_distribution <- function(x, y, variables = NULL) {
   x_min_max_list <- x_max_list <- nbin <- list()
 
   for (name in names(is_numeric)) {
-
+    variable_column_nona <- na.omit(x[,name])
     if (is_numeric[name]) {
-      x_min_max_list[[name]] <- range(x[,name])
-      nbin[[name]] <- nclass.Sturges(x[,name]) ## FD, scott/Sturges nbin choice
+      x_min_max_list[[name]] <- range(variable_column_nona)
+      nbin[[name]] <- nclass.Sturges(variable_column_nona) ## FD, scott/Sturges nbin choice
 
     } else {
-      x_min_max_list[[name]] <- sort(unique(x[,name]))
-      x_max_list[[name]] <- max(table(x[,name]))
+      x_min_max_list[[name]] <- sort(unique(variable_column_nona))
+      x_max_list[[name]] <- max(table(variable_column_nona))
     }
   }
 
-  X <- as.data.frame(cbind(x[,variables], y), stringsAsFactors=TRUE)
-  colnames(X) <- c(variables, "_target_")
+  #:# add residuals
+  X <- as.data.frame(cbind(x[,variables], y, residuals), stringsAsFactors=TRUE)
+  colnames(X) <- c(variables, "_target_", "_residuals_")
 
-  y_max <- max(y)
-  y_min <- min(y)
+  y_max <- max(y, na.rm = TRUE)
+  y_min <- min(y, na.rm = TRUE)
   y_margin <- abs(y_max - y_min)*0.1
+
+  residuals_max <- max(residuals, na.rm = TRUE)
+  residuals_min <- min(residuals, na.rm = TRUE)
+  residuals_margin <- abs(residuals_max - residuals_min)*0.1
 
   ret <- NULL
   ret$x <- X
   ret$x_min_max_list <- x_min_max_list
   ret$y_min_max <- c(y_min - y_margin, y_max + y_margin)
+  ret$residuals_min_max <- c(residuals_min - residuals_margin,
+                             residuals_max + residuals_margin)
   ret$x_max_list <- x_max_list
   ret$nbin <- nbin
   ret$is_numeric <- as.list(is_numeric)
@@ -575,7 +588,7 @@ prepare_feature_distribution <- function(x, y, variables = NULL) {
 }
 
 prepare_average_target <- function(x, y, variables = NULL) {
-  ### This function returns object needed to plot TargetAverage in D3 ###
+  ### Return the object for the TargetAverage plot ###
 
   if (is.null(x) | is.null(y)) return(NULL)
 
@@ -588,20 +601,27 @@ prepare_average_target <- function(x, y, variables = NULL) {
 
   x_min_max_list <- y_min_max_list <- X <- list()
 
-  y_mean <- mean(y)
+  y_mean <- mean(y, na.rm = TRUE)
 
   for (name in names(is_numeric)) {
+    index <- !is.na(x[,name])
+    variable_column_nona <- x[,name][index]
+    y_nona <- y[index]
 
     if (length(unique(x[,name])) == 1) is_numeric[name] <- FALSE # issue #45
 
     if (is_numeric[name]) {
-      x_min_max_list[[name]] <- range(x[,name])
+      x_min_max_list[[name]] <- range(variable_column_nona)
 
-      nbins <- nclass.Sturges(x[,name])
-      variable_splits <- seq(min(x[,name]), max(x[,name]), length.out = nbins)
+      nbins <- nclass.Sturges(variable_column_nona)
+      variable_splits <- seq(min(variable_column_nona),
+                             max(variable_column_nona),
+                             length.out = nbins)
 
-      x_bin <- cut(x[,name], variable_splits, include.lowest = TRUE)
-      y_mean_aggr <- aggregate(y, by = list(x_bin), mean)
+      x_bin <- cut(variable_column_nona,
+                   variable_splits,
+                   include.lowest = TRUE)
+      y_mean_aggr <- aggregate(y_nona, by = list(x_bin), mean, na.rm = TRUE)
 
       ci <- y_mean_aggr[, 1]
       ci2 <- substr(as.character(ci), 2, nchar(as.character(ci)) - 1)
@@ -617,9 +637,9 @@ prepare_average_target <- function(x, y, variables = NULL) {
       colnames(temp) <- c("x0", "x1", "y0", "y1")
 
     } else {
-      x_min_max_list[[name]] <- sort(unique(x[,name]))
+      x_min_max_list[[name]] <- sort(unique(variable_column_nona))
 
-      y_mean_aggr <- aggregate(y, by = list(x[,name]), mean)
+      y_mean_aggr <- aggregate(y_nona, by = list(variable_column_nona), mean, na.rm = TRUE)
 
       temp <- as.data.frame(y_mean_aggr, stringsAsFactors=TRUE)
       colnames(temp) <- c("y", "x0")
@@ -629,13 +649,14 @@ prepare_average_target <- function(x, y, variables = NULL) {
     y_mean_max <- max(y_mean_aggr[,2])
     y_mean_min <- min(y_mean_aggr[,2])
     y_mean_margin <- abs(y_mean_max - y_mean_min)*0.1
-    y_min_max_list[[name]] <- c(y_mean_min - y_mean_margin, y_mean_max + y_mean_margin)
+    y_min_max_list[[name]] <- c(y_mean_min - y_mean_margin,
+                                y_mean_max + y_mean_margin)
 
     X[[name]] <- temp
   }
 
-  y_max <- max(y)
-  y_min <- min(y)
+  y_max <- max(y, na.rm = TRUE)
+  y_min <- min(y, na.rm = TRUE)
   y_margin <- abs(y_max - y_min)*0.1
 
   ret <- NULL

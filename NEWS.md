@@ -1,5 +1,19 @@
-# modelStudio (development)
-* ...
+# modelStudio 2.0.0
+* this version requires `DALEX v2.0`, `ingredients v2.0` and `iBreakDown v1.3.1`
+* The dashboard gathers useful, but not sensitive, information about how it is being used (e.g. computation length, package version, dashboard dimensions). This is for the development purposes only and can be blocked by setting `telemetry` to `FALSE`.
+* add support for `modelStudio` in Shiny [(#77)](https://github.com/ModelOriented/modelStudio/issues/77)
+using new `widget_id` argument
+* modelStudio now works with `NA` in `data` [(#71)](https://github.com/ModelOriented/modelStudio/issues/71)
+* CP, PD and AD plots are now calculated with `variable_splits_type='uniform'` and CP plots are now calculated with `variable_splits_with_obs=TRUE` [(#74)](https://github.com/ModelOriented/modelStudio/issues/74)
+* By default the `loss_function` in FI is now different for each `explainer$model_info$type` [(#73)](https://github.com/ModelOriented/modelStudio/issues/73)
+* fixed a bug where passing additional parameters in `...` would cause an error
+* added a `max_vars` alias for the `max_features` parameter
+* added median line to the boxplots in FI and SV plots, added boxplots to TV categorical plots (regression)
+* TV plot uses boxplots and barplot when the target `y` has only two unique
+values (classification) [(#76)](https://github.com/ModelOriented/modelStudio/issues/76)
+* added more checks for input
+* added the Residuals vs Feature plot (RV) [(#84)](https://github.com/ModelOriented/modelStudio/issues/84)
+* added model performance measures to the footnote [#(85)](https://github.com/ModelOriented/modelStudio/issues/85)
 
 # modelStudio 1.2.0
 * remove redundant documentation resources so that the package weights less

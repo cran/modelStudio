@@ -13,6 +13,7 @@ ms_update_observations(
   B = 10,
   show_info = TRUE,
   parallel = FALSE,
+  widget_id = NULL,
   overwrite = FALSE,
   ...
 )
@@ -36,8 +37,12 @@ See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calc
 \item{show_info}{Verbose a progress on the console. Default is \code{TRUE}.}
 
 \item{parallel}{Speed up the computation using \code{parallelMap::parallelMap()}.
-See \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
+See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
 This might interfere with showing progress using \code{show_info}.}
+
+\item{widget_id}{Use an explicit element ID for the widget (rather than an automatically generated one).
+Useful e.g. when using \code{modelStudio} with Shiny.
+See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#shiny-1}{\bold{vignette}}.}
 
 \item{overwrite}{Overwrite existing observations and their explanations.
 Default is \code{FALSE} which means add new observations to the existing ones.}
@@ -49,7 +54,7 @@ An object of the \code{r2d3, htmlwidget, modelStudio} class.
 }
 \description{
 This function calculates local explanations on new observations and adds them
-to a \code{modelStudio} object.
+to the \code{modelStudio} object.
 }
 \examples{
 library("DALEX")
@@ -64,7 +69,8 @@ explainer_titanic <- explain(model_titanic,
                              y = titanic_imputed$survived)
 
 # make a studio for the model
-ms <- modelStudio(explainer_titanic)
+ms <- modelStudio(explainer_titanic,
+                  N = 200,  B = 5) # faster example
 
 \donttest{
 
@@ -90,12 +96,13 @@ ms
 \references{
 \itemize{
   \item The input object is implemented in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
-  \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots
-are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
-  \item Break Down and Shapley Values plots are implemented in \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
+  \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence explanations
+   are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
+  \item Break Down and Shapley Values explanations are implemented in
+   \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
 }
 }
 \seealso{
-Vignettes: \href{https://modeloriented.github.io/modelStudio/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
-and \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
+Vignettes: \href{https://modelstudio.drwhy.ai/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
+and \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
 }

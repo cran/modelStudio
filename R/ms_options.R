@@ -33,7 +33,7 @@
 #' }
 #' \subsection{Plot specific options:}{
 #' \code{**} is a two letter code unique to each plot, might be
-#' one of \code{[bd,sv,cp,fi,pd,ad,fd,tv,at]}.\cr
+#' one of \code{[bd,sv,cp,fi,pd,ad,rv,fd,tv,at]}.\cr
 #'
 #' \describe{
 #' \item{**_title}{Plot specific title. Default varies.}
@@ -50,14 +50,15 @@
 #'
 #' \itemize{
 #'   \item The input object is implemented in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
-#'   \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots
-#' are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
-#'   \item Break Down and Shapley Values plots are implemented in \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
+#'   \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence explanations
+#'    are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
+#'   \item Break Down and Shapley Values explanations are implemented in
+#'    \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
 #' }
 #'
 #' @seealso
-#' Vignettes: \href{https://modeloriented.github.io/modelStudio/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
-#' and \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
+#' Vignettes: \href{https://modelstudio.drwhy.ai/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
+#' and \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
 #'
 #' @examples
 #' library("DALEX")
@@ -159,6 +160,10 @@ ms_options <- function(...) {
     ad_line_size = NULL,
     ad_bar_color = NULL,
     ad_line_color = NULL,
+    rv_title = "Residuals vs Feature",
+    rv_subtitle = NULL,
+    rv_point_size = NULL,
+    rv_point_color = NULL,
     fd_title = "Feature Distribution",
     fd_subtitle = NULL,
     fd_bar_width = NULL,
@@ -174,7 +179,8 @@ ms_options <- function(...) {
     at_point_size = 3,
     at_bar_color = NULL,
     at_line_color = NULL,
-    at_point_color = "#371ea3"
+    at_point_color = "#371ea3",
+    showcase_name = NULL
   )
 
   # input new options
@@ -187,7 +193,7 @@ ms_options <- function(...) {
 #' @export
 #' @rdname ms_options
 modelStudioOptions <- function(...) {
-  warning("The 'modelStudioOptions()' function is deprecated; please use 'ms_options()' instead.")
+  warning("The 'modelStudioOptions()' function is deprecated; use 'ms_options()' instead.")
   ret <- ms_options(...)
   ret
 }

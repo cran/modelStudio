@@ -21,6 +21,9 @@ modelStudio(explainer, ...)
   parallel = FALSE,
   options = ms_options(),
   viewer = "external",
+  widget_id = NULL,
+  telemetry = TRUE,
+  max_vars = NULL,
   ...
 )
 }
@@ -49,35 +52,56 @@ See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calc
 Default is \code{10}.
 See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}}
 
-\item{eda}{Compute EDA plots. Default is \code{TRUE}.}
+\item{eda}{Compute EDA plots and Residuals vs Feature plot, which adds the data to the dashboard. Default is \code{TRUE}.}
 
 \item{show_info}{Verbose a progress on the console. Default is \code{TRUE}.}
 
 \item{parallel}{Speed up the computation using \code{parallelMap::parallelMap()}.
-See \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
+See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
 This might interfere with showing progress using \code{show_info}.}
 
 \item{options}{Customize \code{modelStudio}. See \code{\link{ms_options}} and
-\href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#plot-options}{\bold{vignette}}.}
+\href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#additional-options-1}{\bold{vignette}}.}
 
 \item{viewer}{Default is \code{external} to display in an external RStudio window.
 Use \code{browser} to display in an external browser or
 \code{internal} to use the RStudio internal viewer pane for output.}
+
+\item{widget_id}{Use an explicit element ID for the widget (rather than an automatically generated one).
+Useful e.g. when using \code{modelStudio} with Shiny.
+See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#shiny-1}{\bold{vignette}}.}
+
+\item{telemetry}{The dashboard gathers useful, but not sensitive, information about how it is being used (e.g. computation length,
+package version, dashboard dimensions). This is for the development purposes only and can be blocked by setting \code{telemetry} to \code{FALSE}.}
+
+\item{max_vars}{An alias for \code{max_features}. If provided, it will override the value.}
 }
 \value{
 An object of the \code{r2d3, htmlwidget, modelStudio} class.
 }
 \description{
-This function computes various (instance and dataset level) model explanations and produces an interactive,
-customisable dashboard. It consists of multiple panels for plots with their short descriptions.
-Easily save and share the HTML dashboard with others. Tools for model exploration unite with tools for
+This function computes various (instance and dataset level) model explanations and
+produces a customisable dashboard, which consists of multiple panels for plots with their
+short descriptions. Easily save the dashboard and share it with others. Tools for
+\href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis} unite with tools for
 Exploratory Data Analysis to give a broad overview of the model behavior.
 
-Theoretical introduction to the plots:
-\href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis: Explore, Explain and Examine Predictive Models}
+The extensive documentation covers:
+
+\itemize{
+  \item Function parameters description -
+ \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html}{\bold{perks and features}}
+  \item Framework and model compatibility -
+ \href{https://modelstudio.drwhy.ai/articles/ms-r-python-examples.html}{\bold{R & Python examples}}
+  \item Theoretical introduction to the plots -
+ \href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis: Explore, Explain and Examine Predictive Models}
+}
 
 Displayed variable can be changed by clicking on the bars of plots or with the first dropdown list,
  and observation can be changed with the second dropdown list.
+The dashboard gathers useful, but not sensitive, information about how it is being used (e.g. computation length,
+ package version, dashboard dimensions). This is for the development purposes only and can be blocked
+ by setting \code{telemetry} to \code{FALSE}.
 }
 \examples{
 library("DALEX")
@@ -100,7 +124,8 @@ rownames(new_observations) <- c("Lucas","James")
 
 # make a studio for the model
 modelStudio(explainer_titanic,
-            new_observations)
+            new_observations,
+            N = 200,  B = 5) # faster example
 
 \donttest{
 
@@ -161,13 +186,13 @@ modelStudio(explainer_HR,
 \references{
 \itemize{
   \item The input object is implemented in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
-  \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots
+  \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence explanations
    are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
-  \item Break Down and Shapley Values plots are implemented in
+  \item Break Down and Shapley Values explanations are implemented in
    \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
 }
 }
 \seealso{
-Vignettes: \href{https://modeloriented.github.io/modelStudio/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
-and \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
+Vignettes: \href{https://modelstudio.drwhy.ai/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
+and \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
 }

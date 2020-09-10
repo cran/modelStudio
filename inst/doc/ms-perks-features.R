@@ -140,6 +140,48 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 #  new_ms
 
 ## ----eval = FALSE-------------------------------------------------------------
+#  library(shiny)
+#  library(r2d3)
+#  
+#  
+#  ui <- fluidPage(
+#    textInput("text", h3("Text input"),
+#              value = "Enter text..."),
+#    uiOutput('dashboard')
+#  )
+#  
+#  server <- function(input, output) {
+#    #:# id of div where modelStudio will appear
+#    WIDGET_ID = 'MODELSTUDIO'
+#  
+#    #:# create modelStudio
+#    library(modelStudio)
+#    library(DALEX)
+#    model <- glm(survived ~., data = titanic_imputed, family = "binomial")
+#    explainer <- explain(model,
+#                         data = titanic_imputed,
+#                         y = titanic_imputed$survived,
+#                         label = "Titanic GLM",
+#                         verbose = FALSE)
+#    ms <- modelStudio(explainer,
+#                      widget_id = WIDGET_ID,  #:# use the widget_id
+#                      show_info = FALSE)
+#    ms$elementId <- NULL                      #:# remove elementId to stop the warning
+#  
+#    #:# basic render d3 output
+#    output[[WIDGET_ID]] <- renderD3({
+#      ms
+#    })
+#  
+#    #:# use render ui to set proper width and height
+#    output$dashboard <- renderUI({
+#      d3Output(WIDGET_ID, width=ms$width, height=ms$height)
+#    })
+#  }
+#  
+#  shinyApp(ui = ui, server = server)
+
+## ----eval = FALSE-------------------------------------------------------------
 #  library(DALEXtra)
 #  library(mlr)
 #  

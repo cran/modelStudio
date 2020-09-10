@@ -16,14 +16,15 @@
 #'
 #' \itemize{
 #'   \item The input object is implemented in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
-#'   \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots
-#' are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
-#'   \item Break Down and Shapley Values plots are implemented in \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
+#'   \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence explanations
+#'    are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
+#'   \item Break Down and Shapley Values explanations are implemented in
+#'    \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
 #' }
 #'
 #' @seealso
-#' Vignettes: \href{https://modeloriented.github.io/modelStudio/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
-#' and \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
+#' Vignettes: \href{https://modelstudio.drwhy.ai/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
+#' and \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
 #'
 #' @examples
 #' library("DALEX")
@@ -38,7 +39,8 @@
 #'                              y = titanic_imputed$survived)
 #'
 #' # make a studio for the model
-#' ms <- modelStudio(explainer_titanic)
+#' ms <- modelStudio(explainer_titanic,
+#'                   N = 200,  B = 5) # faster example
 #'
 #' # update the options
 #' new_ms <- ms_update_options(ms,

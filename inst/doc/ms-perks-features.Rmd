@@ -18,10 +18,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-The `modelStudio()` function computes various (instance and dataset level) model explanations and produces
-an interactive, customisable dashboard. It consists of multiple panels for plots with their short descriptions.
-Easily save and share the HTML dashboard with others. Tools for model exploration unite with tools for
-EDA (Exploratory Data Analysis) to give a broad overview of the model behavior.
+The `modelStudio()` function computes various (instance and dataset level) model explanations 
+and produces a customisable dashboard, which consists of multiple panels for plots with their
+short descriptions. Easily save the dashboard and share it with others. Tools for
+[Explanatory Model Analysis](https://pbiecek.github.io/ema/) unite with tools for Exploratory Data Analysis 
+to give a broad overview of the model behavior.
 
 Let's use `HR` dataset to explore `modelStudio` parameters:
 
@@ -171,7 +172,7 @@ to calculate local explainers faster. It is really useful when using `modelStudi
 complicated models, vast datasets or **many observations are being processed**.
 
 All options can be set outside of the function call.
-[How to use parallelMap](https://github.com/berndbischl/parallelMap#being-lazy-configuration).
+[How to use parallelMap](https://github.com/mlr-org/parallelMap#being-lazy-configuration).
 
 ```{r eval = FALSE}
 # set up the cluster
@@ -193,7 +194,7 @@ modelStudio(explainer,
 
 Customize some of the `modelStudio` looks by overwriting default options returned
 by the `ms_options()` function.
-[Full list of options](http://modelstudio.drwhy.ai/reference/ms_options.html).
+[Full list of options](https://modelstudio.drwhy.ai/reference/ms_options.html).
 
 ```{r eval = FALSE}
 # set additional graphical parameters
@@ -250,9 +251,62 @@ new_ms <- ms_update_observations(old_ms,
 new_ms
 ```
 
+-------------------------------------------------------------------
+
+## Shiny
+
+Use the `widget_id` argument and `r2d3` package to render the `modelStudio` output in Shiny.
+See [Using r2d3 with Shiny](https://rstudio.github.io/r2d3/articles/shiny.html) and consider 
+the following example:
+
+```{r eval = FALSE}
+library(shiny)
+library(r2d3)
+
+
+ui <- fluidPage(
+  textInput("text", h3("Text input"), 
+            value = "Enter text..."),
+  uiOutput('dashboard')
+)
+
+server <- function(input, output) {
+  #:# id of div where modelStudio will appear
+  WIDGET_ID = 'MODELSTUDIO'
+  
+  #:# create modelStudio 
+  library(modelStudio)
+  library(DALEX)
+  model <- glm(survived ~., data = titanic_imputed, family = "binomial")
+  explainer <- explain(model,
+                       data = titanic_imputed,
+                       y = titanic_imputed$survived,
+                       label = "Titanic GLM",
+                       verbose = FALSE)
+  ms <- modelStudio(explainer,
+                    widget_id = WIDGET_ID,  #:# use the widget_id 
+                    show_info = FALSE)    
+  ms$elementId <- NULL                      #:# remove elementId to stop the warning
+
+  #:# basic render d3 output
+  output[[WIDGET_ID]] <- renderD3({
+    ms
+  })
+  
+  #:# use render ui to set proper width and height
+  output$dashboard <- renderUI({
+    d3Output(WIDGET_ID, width=ms$width, height=ms$height)
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+-------------------------------------------------------------------
+
 ## DALEXtra
 
-Use `explain_*()` functions from the [DALEXtra](https://github.com/ModelOriented/DALEXtra)
+Use `explain_*()` functions from the [DALEXtra](https://github.com/ModelOriented/DALEXtra/)
 package to explain various models.
 
 Bellow basic example of making `modelStudio` for a `mlr` model using `explain_mlr()`.
@@ -276,10 +330,12 @@ explainer_mlr <- explain_mlr(model,
 modelStudio(explainer_mlr)
 ```
 
+-------------------------------------------------------------------
+
 ## References
 
-* Theoretical introduction to the plots: [Explanatory Model Analysis. Explore, Explain and Examine Predictive Models.](https://pbiecek.github.io/ema)
+* Theoretical introduction to the plots: [Explanatory Model Analysis. Explore, Explain and Examine Predictive Models.](https://pbiecek.github.io/ema/)
 * The input object is implemented in [DALEX](https://modeloriented.github.io/DALEX/)
-* Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots
+* Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence explanations
 are implemented in [ingredients](https://modeloriented.github.io/ingredients/)
-* Break Down and Shapley Values plots are implemented in [iBreakDown](https://modeloriented.github.io/iBreakDown/)
+* Break Down and Shapley Values explanations are implemented in [iBreakDown](https://modeloriented.github.io/iBreakDown/)

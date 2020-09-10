@@ -1,16 +1,28 @@
 #' @title Interactive Studio for Explanatory Model Analysis
 #'
 #' @description
-#' This function computes various (instance and dataset level) model explanations and produces an interactive,
-#' customisable dashboard. It consists of multiple panels for plots with their short descriptions.
-#' Easily save and share the HTML dashboard with others. Tools for model exploration unite with tools for
+#' This function computes various (instance and dataset level) model explanations and
+#' produces a customisable dashboard, which consists of multiple panels for plots with their
+#' short descriptions. Easily save the dashboard and share it with others. Tools for
+#' \href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis} unite with tools for
 #' Exploratory Data Analysis to give a broad overview of the model behavior.
 #'
-#' Theoretical introduction to the plots:
-#' \href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis: Explore, Explain and Examine Predictive Models}
+#' The extensive documentation covers:
+#'
+#' \itemize{
+#'   \item Function parameters description -
+#'  \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html}{\bold{perks and features}}
+#'   \item Framework and model compatibility -
+#'  \href{https://modelstudio.drwhy.ai/articles/ms-r-python-examples.html}{\bold{R & Python examples}}
+#'   \item Theoretical introduction to the plots -
+#'  \href{https://pbiecek.github.io/ema/}{Explanatory Model Analysis: Explore, Explain and Examine Predictive Models}
+#' }
 #'
 #' Displayed variable can be changed by clicking on the bars of plots or with the first dropdown list,
 #'  and observation can be changed with the second dropdown list.
+#' The dashboard gathers useful, but not sensitive, information about how it is being used (e.g. computation length,
+#'  package version, dashboard dimensions). This is for the development purposes only and can be blocked
+#'  by setting \code{telemetry} to \code{FALSE}.
 #'
 #' @param explainer An \code{explainer} created with \code{DALEX::explain()}.
 #' @param new_observation New observations with columns that correspond to variables used in the model.
@@ -19,6 +31,7 @@
 #' @param time Time in ms. Set the animation length. Default is \code{500}.
 #' @param max_features Maximum number of features to be included in BD and SV plots.
 #'  Default is \code{10}.
+#' @param max_vars An alias for \code{max_features}. If provided, it will override the value.
 #' @param N Number of observations used for the calculation of PD and AD.
 #'  \code{10*N} is a number of observations used for the calculation of FI.
 #'  Default \code{N} is \code{300}.
@@ -26,22 +39,27 @@
 #' @param B Number of permutation rounds used for calculation of SV and FI.
 #'  Default is \code{10}.
 #'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}
-#' @param eda Compute EDA plots. Default is \code{TRUE}.
+#' @param eda Compute EDA plots and Residuals vs Feature plot, which adds the data to the dashboard. Default is \code{TRUE}.
 #' @param show_info Verbose a progress on the console. Default is \code{TRUE}.
 #' @param parallel Speed up the computation using \code{parallelMap::parallelMap()}.
-#'  See \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
+#'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
 #'  This might interfere with showing progress using \code{show_info}.
 #' @param options Customize \code{modelStudio}. See \code{\link{ms_options}} and
-#'  \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#plot-options}{\bold{vignette}}.
+#'  \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#additional-options-1}{\bold{vignette}}.
 #' @param viewer Default is \code{external} to display in an external RStudio window.
 #'  Use \code{browser} to display in an external browser or
 #'  \code{internal} to use the RStudio internal viewer pane for output.
+#' @param widget_id Use an explicit element ID for the widget (rather than an automatically generated one).
+#'  Useful e.g. when using \code{modelStudio} with Shiny.
+#'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#shiny-1}{\bold{vignette}}.
+#' @param telemetry The dashboard gathers useful, but not sensitive, information about how it is being used (e.g. computation length,
+#'  package version, dashboard dimensions). This is for the development purposes only and can be blocked by setting \code{telemetry} to \code{FALSE}.
 #' @param ... Other parameters.
 #'
 #' @return An object of the \code{r2d3, htmlwidget, modelStudio} class.
 #'
 #' @importFrom utils head tail packageVersion
-#' @importFrom stats aggregate predict quantile IQR
+#' @importFrom stats aggregate predict quantile IQR na.omit median
 #' @importFrom grDevices nclass.Sturges
 #' @import progress
 #'
@@ -49,15 +67,15 @@
 #'
 #' \itemize{
 #'   \item The input object is implemented in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
-#'   \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots
+#'   \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence explanations
 #'    are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
-#'   \item Break Down and Shapley Values plots are implemented in
+#'   \item Break Down and Shapley Values explanations are implemented in
 #'    \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
 #' }
 #'
 #' @seealso
-#' Vignettes: \href{https://modeloriented.github.io/modelStudio/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
-#' and \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
+#' Vignettes: \href{https://modelstudio.drwhy.ai/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
+#' and \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
 #'
 #' @examples
 #' library("DALEX")
@@ -80,7 +98,8 @@
 #'
 #' # make a studio for the model
 #' modelStudio(explainer_titanic,
-#'             new_observations)
+#'             new_observations,
+#'             N = 200,  B = 5) # faster example
 #'
 #' \donttest{
 #'
@@ -159,18 +178,24 @@ modelStudio.explainer <- function(explainer,
                                   parallel = FALSE,
                                   options = ms_options(),
                                   viewer = "external",
+                                  widget_id = NULL,
+                                  telemetry = TRUE,
+                                  max_vars = NULL,
                                   ...) {
+
+  start_time <- Sys.time()
+
+  #:# checks
+  explainer <- check_explainer(explainer)
 
   model <- explainer$model
   data <- explainer$data
   y <- explainer$y
   predict_function <- explainer$predict_function
   label <- explainer$label
+  model_type <- explainer$model_info$type
 
-  #:# checks
-  if (is.null(rownames(data))) {
-    rownames(data) <- 1:nrow(data)
-  }
+  if (!is.null(max_vars)) max_features <- max_vars
 
   if (is.null(new_observation)) {
     if (show_info) message("`new_observation` argument is NULL.\n",
@@ -189,9 +214,33 @@ modelStudio.explainer <- function(explainer,
   if ("try-error" %in% class(check_single_prediction)) {
     stop("`explainer$predict_function` returns an error when executed on `new_observation[1,, drop = FALSE]` \n")
   }
+
+  #:# keyword arguments
+
+  kwargs <- list(...)
+  kwargs_names <- names(list(...))
+
+  if ('loss_function' %in% kwargs_names) {
+    loss_function <- kwargs[['loss_function']]
+  } else if (is.null(explainer$model_info$type)) {
+    if (is_binary(y)) {
+      loss_function <- DALEX::loss_one_minus_auc
+    } else {
+      loss_function <- DALEX::loss_root_mean_square
+    }
+  } else {
+    loss_function <- DALEX::loss_default(explainer$model_info$type)
+  }
+
+  variable_splits_type <- ifelse('variable_splits_type' %in% kwargs_names,
+                                 kwargs[['variable_splits_type']],
+                                 'uniform')
+  variable_splits_with_obs <- ifelse('variable_splits_with_obs' %in% kwargs_names,
+                                     kwargs[['variable_splits_with_obs']],
+                                     TRUE)
   #:#
 
-  ## get proper names of features that arent target
+  ## get proper names of features that aren't target
   is_y <- is_y_in_data(data, y)
   potential_variable_names <- names(is_y[!is_y])
   variable_names <- intersect(potential_variable_names, colnames(new_observation))
@@ -205,9 +254,10 @@ modelStudio.explainer <- function(explainer,
   ## later update progress bar after all explanation functions
   if (show_info) {
     pb <- progress_bar$new(
-      format = "  Calculating :what \n    Elapsed time: :elapsedfull ETA::eta", # :percent  [:bar]
+      format = "  Calculating :what \n    Elapsed time: :elapsedfull ETA::eta ", # :percent  [:bar]
       total = (3*B + 2 + 1)*obs_count + (2*B + 3*B + B) + 1,
-      show_after = 0
+      show_after = 0,
+      width = 110
     )
     pb$tick(0, tokens = list(what = "..."))
   }
@@ -215,7 +265,9 @@ modelStudio.explainer <- function(explainer,
   ## count only once
   fi <- calculate(
     ingredients::feature_importance(
-        model, data, y, predict_function, variables = variable_names, B = B, N = 10*N),
+        model, data, y, predict_function, variables = variable_names, B = B, N = 10*N,
+        loss_function = loss_function
+        ),
     "ingredients::feature_importance", show_info, pb, 2*B)
 
   which_numerical <- which_variables_are_numeric(data)
@@ -224,50 +276,63 @@ modelStudio.explainer <- function(explainer,
   if (all(which_numerical)) {
     pd_n <- calculate(
       ingredients::partial_dependence(
-          model, data, predict_function, variable_type = "numerical", N = N),
+          model, data, predict_function, variable_type = "numerical", N = N,
+          variable_splits_type=variable_splits_type),
       "ingredients::partial_dependence (numerical)", show_info, pb, B)
     pd_c <- NULL
     ad_n <- calculate(
       ingredients::accumulated_dependence(
-          model, data, predict_function, variable_type = "numerical", N = N),
+          model, data, predict_function, variable_type = "numerical", N = N,
+          variable_splits_type=variable_splits_type),
       "ingredients::accumulated_dependence (numerical)", show_info, pb, 3*B)
     ad_c <- NULL
   } else if (all(!which_numerical)) {
     pd_n <- NULL
     pd_c <- calculate(
       ingredients::partial_dependence(
-          model, data, predict_function, variable_type = "categorical", N = N),
+          model, data, predict_function, variable_type = "categorical", N = N,
+          variable_splits_type=variable_splits_type),
       "ingredients::partial_dependence (categorical)", show_info, pb, B)
     ad_n <- NULL
     ad_c <- calculate(
       ingredients::accumulated_dependence(
-          model, data, predict_function, variable_type = "categorical", N = N),
+          model, data, predict_function, variable_type = "categorical", N = N,
+          variable_splits_type=variable_splits_type),
       "ingredients::accumulated_dependence (categorical)", show_info, pb, 3*B)
   } else {
     pd_n <- calculate(
       ingredients::partial_dependence(
-        model, data, predict_function, variable_type = "numerical", N = N),
+        model, data, predict_function, variable_type = "numerical", N = N,
+        variable_splits_type=variable_splits_type),
       "ingredients::partial_dependence (numerical)", show_info, pb, B/2)
     pd_c <- calculate(
       ingredients::partial_dependence(
-        model, data, predict_function, variable_type = "categorical", N = N),
+        model, data, predict_function, variable_type = "categorical", N = N,
+        variable_splits_type=variable_splits_type),
       "ingredients::partial_dependence (categorical)", show_info, pb, B/2)
     ad_n <- calculate(
       ingredients::accumulated_dependence(
-        model, data, predict_function, variable_type = "numerical", N = N),
+        model, data, predict_function, variable_type = "numerical", N = N,
+        variable_splits_type=variable_splits_type),
       "ingredients::accumulated_dependence (numerical)", show_info, pb, 2*B)
     ad_c <- calculate(
       ingredients::accumulated_dependence(
-        model, data, predict_function, variable_type = "categorical", N = N),
+        model, data, predict_function, variable_type = "categorical", N = N,
+        variable_splits_type=variable_splits_type),
       "ingredients::accumulated_dependence (categorical)", show_info, pb, B)
   }
 
-  fi_data <- prepare_feature_importance(fi, max_features, options$show_boxplot, ...)
+  fi_data <- prepare_feature_importance(fi, max_features, options$show_boxplot,
+                                        attr(loss_function, "loss_name"), ...)
   pd_data <- prepare_partial_dependence(pd_n, pd_c, variables = variable_names)
   ad_data <- prepare_accumulated_dependence(ad_n, ad_c, variables = variable_names)
+  mp_data <- DALEX::model_performance(explainer)$measures
 
   if (eda) {
-    fd_data <- prepare_feature_distribution(data, y, variables = variable_names)
+    #:# fd_data is used by targetVs and residualsVs plots
+    residuals <- DALEX::model_diagnostics(explainer)$residuals
+    fd_data <- prepare_feature_distribution(data, y, variables = variable_names,
+                                            residuals = residuals)
     at_data <- prepare_average_target(data, y, variables = variable_names)
   } else {
     fd_data <- at_data <- NULL
@@ -283,15 +348,17 @@ modelStudio.explainer <- function(explainer,
       bd <- calculate(
         iBreakDown::local_attributions(
           model, data, predict_function, new_observation, label = label),
-        paste0("iBreakDown::local_attributions (", i, ")"), show_info, pb, 2)
+        paste0("iBreakDown::local_attributions (", i, ")      "), show_info, pb, 2)
       sv <- calculate(
         iBreakDown::shap(
           model, data, predict_function, new_observation, label = label, B = B),
-        paste0("iBreakDown::shap (", i, ")"), show_info, pb, 3*B)
+        paste0("iBreakDown::shap (", i, ")                    "), show_info, pb, 3*B)
       cp <- calculate(
         ingredients::ceteris_paribus(
-          model, data, predict_function, new_observation, label = label),
-        paste0("ingredients::ceteris_paribus (", i, ")"), show_info, pb, 1)
+          model, data, predict_function, new_observation, label = label,
+          variable_splits_type=variable_splits_type,
+          variable_splits_with_obs=variable_splits_with_obs),
+        paste0("ingredients::ceteris_paribus (", i, ")        "), show_info, pb, 1)
 
       bd_data <- prepare_break_down(bd, max_features, ...)
       sv_data <- prepare_shapley_values(sv, max_features, show_boxplot, ...)
@@ -321,15 +388,17 @@ modelStudio.explainer <- function(explainer,
       bd <- calculate(
         iBreakDown::local_attributions(
           model, data, predict_function, new_observation, label = label),
-        paste0("iBreakDown::local_attributions (", i, ")"), show_info, pb, 2)
+        paste0("iBreakDown::local_attributions (", i, ")      "), show_info, pb, 2)
       sv <- calculate(
         iBreakDown::shap(
           model, data, predict_function, new_observation, label = label, B = B),
-        paste0("iBreakDown::shap (", i, ")"), show_info, pb, 3*B)
+        paste0("iBreakDown::shap (", i, ")                    "), show_info, pb, 3*B)
       cp <- calculate(
         ingredients::ceteris_paribus(
-          model, data, predict_function, new_observation, label = label),
-        paste0("ingredients::ceteris_paribus (", i, ")"), show_info, pb, 1)
+          model, data, predict_function, new_observation, label = label,
+          variable_splits_type=variable_splits_type,
+          variable_splits_with_obs=variable_splits_with_obs),
+        paste0("ingredients::ceteris_paribus (", i, ")        "), show_info, pb, 1)
 
       bd_data <- prepare_break_down(bd, max_features, ...)
       sv_data <- prepare_shapley_values(sv, max_features, options$show_boxplot, ...)
@@ -342,7 +411,9 @@ modelStudio.explainer <- function(explainer,
   # pack explanation data to json and make hash for htmlwidget
   names(obs_list) <- rownames(obs_data)
   temp <- jsonlite::toJSON(list(obs_list, fi_data, pd_data, ad_data, fd_data, at_data), auto_unbox = TRUE)
-  widget_id <- paste0("widget-", digest::digest(temp))
+  widget_id <- ifelse(!is.null(widget_id),
+                      widget_id,
+                      paste0("widget-", digest::digest(temp)))
 
   # prepare observation data for drop down
   between <- " - "
@@ -353,19 +424,47 @@ modelStudio.explainer <- function(explainer,
   colnames(drop_down_data) <- c("id", "text")
 
   # prepare footer text and ms title
-  footer_text <- paste0("Site built with modelStudio v", packageVersion("modelStudio"),
-                        " on ", format(Sys.time(), usetz = FALSE))
+  ms_package_version <- as.character(packageVersion("modelStudio"))
+  ms_creation_date <- Sys.time()
+  version_text <- paste0("Site built with modelStudio v",
+                         ms_package_version,
+                         " on ",
+                         format(ms_creation_date, usetz = FALSE))
+  measure_text <- paste(names(mp_data),
+                        round(unlist(mp_data), 3),
+                        sep = ": ", collapse=" | ")
+
+  if (telemetry) {
+    creation_time <- as.character(as.integer(as.numeric(ms_creation_date - start_time)*60))
+    options$telemetry <- list(date = format(ms_creation_date, usetz = FALSE),
+                              version = ms_package_version,
+                              showcaseName = options$showcase_name,
+                              creationTime = creation_time,
+                              facetRow = facet_dim[1],
+                              facetCol = facet_dim[2],
+                              width = options$w,
+                              height = options$h,
+                              animationTime = time,
+                              parallel = parallel,
+                              N = N,
+                              B = B,
+                              model = class(model)[1],
+                              dataSize = nrow(data),
+                              varCount = length(variable_names),
+                              obsCount = obs_count)
+  }
 
   if (is.null(options$ms_title)) options$ms_title <- paste0("Interactive Studio for ", label, " Model")
-
   options <- c(list(time = time,
                     model_name = label,
                     variable_names = variable_names,
                     facet_dim = facet_dim,
-                    footer_text = footer_text,
+                    version_text = version_text,
+                    measure_text = measure_text,
                     drop_down_data = jsonlite::toJSON(drop_down_data),
                     eda = eda,
-                    widget_id = widget_id
+                    widget_id = widget_id,
+                    is_target_binary = is_binary(y)
                     ), options)
 
   sizing_policy <- r2d3::sizingPolicy(padding = 10, browser.fill = TRUE)
@@ -386,7 +485,7 @@ modelStudio.explainer <- function(explainer,
                     ),
                     css = system.file("d3js/modelStudio.css", package = "modelStudio"),
                     options = options,
-                    d3_version = "4",
+                    d3_version = "4",  # v4 is important
                     viewer = viewer,
                     sizing = sizing_policy,
                     elementId = widget_id,
@@ -470,9 +569,11 @@ calculate <- function(expr, function_name, show_info = FALSE, pb = NULL, ticks =
 
 # returns the vector of logical: TRUE for variables identical with the target
 is_y_in_data <- function(data, y) {
-  apply(data, 2, function(x) {
-    all(as.character(x) == as.character(y))
-  })
+  if (is.matrix(data)) {
+    apply(data[,, drop = FALSE], 2, identical, y)
+  } else {
+    sapply(data[,, drop = FALSE], identical, y)
+  }
 }
 
 # check for numeric columns (works for data.frame AND matrix)
@@ -483,4 +584,37 @@ which_variables_are_numeric <- function(data) {
   } else {
     sapply(data[,, drop = FALSE], is.numeric)
   }
+}
+
+# check for binary target
+is_binary <- function(y) {
+  is.numeric(y) & length(unique(y)) == 2
+}
+
+check_explainer <- function(explainer) {
+
+  if (is.null(explainer$data))
+    stop('explainer$data is NULL - pass the `data` argument to the explain() function')
+  if (is.null(explainer$y))
+    stop('explainer$y is NULL - pass the `y` argument to the explain() function')
+  if (!is.null(explainer$model_info$type) && explainer$model_info$type == 'multiclass')
+    stop('explainer$model_info$type is multiclass - modelStudio supports regression and classification',
+         ' use predict_function that returns one value per observation')
+  if (is.null(rownames(explainer$data)))
+    rownames(explainer$data) <- 1:nrow(explainer$data)
+  if (is.null(colnames(explainer$data)))
+    colnames(explainer$data) <- 1:ncol(explainer$data)
+
+  # this check is to be removed with DALEX>=2.0.1 dependency
+  if ("dalex._explainer.object.Explainer" %in% class(explainer)) {
+    if (is.null(explainer$y_hat) || is.null(explainer$residuals))
+      stop('For Python support, use precalculate=True in Explainer init')
+    class(explainer) <- c('explainer', class(explainer))
+  }
+  if ("array" %in% class(explainer$y_hat) && length(dim(explainer$y_hat)) == 1)
+    explainer$y_hat <- as.vector(explainer$y_hat)
+  if ("array" %in% class(explainer$residuals) && length(dim(explainer$residuals)) == 1)
+    explainer$residuals <- as.vector(explainer$residuals)
+
+  explainer
 }

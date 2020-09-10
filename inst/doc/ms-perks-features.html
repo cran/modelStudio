@@ -12,10 +12,26 @@
 
 <meta name="author" content="Hubert Baniecki" />
 
-<meta name="date" content="2020-07-15" />
+<meta name="date" content="2020-09-10" />
 
 <title>modelStudio - perks and features</title>
 
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
 
 
 <style type="text/css">code{white-space: pre;}</style>
@@ -303,11 +319,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">modelStudio - perks and features</h1>
 <h4 class="author">Hubert Baniecki</h4>
-<h4 class="date">2020-07-15</h4>
+<h4 class="date">2020-09-10</h4>
 
 
 
-<p>The <code>modelStudio()</code> function computes various (instance and dataset level) model explanations and produces an interactive, customisable dashboard. It consists of multiple panels for plots with their short descriptions. Easily save and share the HTML dashboard with others. Tools for model exploration unite with tools for EDA (Exploratory Data Analysis) to give a broad overview of the model behavior.</p>
+<p>The <code>modelStudio()</code> function computes various (instance and dataset level) model explanations and produces a customisable dashboard, which consists of multiple panels for plots with their short descriptions. Easily save the dashboard and share it with others. Tools for <a href="https://pbiecek.github.io/ema/">Explanatory Model Analysis</a> unite with tools for Exploratory Data Analysis to give a broad overview of the model behavior.</p>
 <p>Let’s use <code>HR</code> dataset to explore <code>modelStudio</code> parameters:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>train &lt;-<span class="st"> </span>DALEX<span class="op">::</span>HR</span>
 <span id="cb1-2"><a href="#cb1-2"></a>train<span class="op">$</span>fired &lt;-<span class="st"> </span><span class="kw">as.factor</span>(<span class="kw">ifelse</span>(train<span class="op">$</span>status <span class="op">==</span><span class="st"> &quot;fired&quot;</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
@@ -469,7 +485,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div id="parallel-computation" class="section level2">
 <h2>parallel computation</h2>
 <p>Speed up <code>modelStudio</code> computation by setting <code>parallel</code> parameter to <code>TRUE</code>. It uses <a href="https://www.rdocumentation.org/packages/parallelMap"><code>parallelMap</code></a> package to calculate local explainers faster. It is really useful when using <code>modelStudio</code> with complicated models, vast datasets or <strong>many observations are being processed</strong>.</p>
-<p>All options can be set outside of the function call. <a href="https://github.com/berndbischl/parallelMap#being-lazy-configuration">How to use parallelMap</a>.</p>
+<p>All options can be set outside of the function call. <a href="https://github.com/mlr-org/parallelMap#being-lazy-configuration">How to use parallelMap</a>.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="co"># set up the cluster</span></span>
 <span id="cb10-2"><a href="#cb10-2"></a><span class="kw">options</span>(</span>
 <span id="cb10-3"><a href="#cb10-3"></a>  <span class="dt">parallelMap.default.mode        =</span> <span class="st">&quot;socket&quot;</span>,</span>
@@ -485,7 +501,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="additional-options" class="section level2">
 <h2>additional options</h2>
-<p>Customize some of the <code>modelStudio</code> looks by overwriting default options returned by the <code>ms_options()</code> function. <a href="http://modelstudio.drwhy.ai/reference/ms_options.html">Full list of options</a>.</p>
+<p>Customize some of the <code>modelStudio</code> looks by overwriting default options returned by the <code>ms_options()</code> function. <a href="https://modelstudio.drwhy.ai/reference/ms_options.html">Full list of options</a>.</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># set additional graphical parameters</span></span>
 <span id="cb11-2"><a href="#cb11-2"></a>new_options &lt;-<span class="st"> </span><span class="kw">ms_options</span>(</span>
 <span id="cb11-3"><a href="#cb11-3"></a>  <span class="dt">show_subtitle =</span> <span class="ot">TRUE</span>,</span>
@@ -530,35 +546,82 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb13-13"><a href="#cb13-13"></a>                                 <span class="dt">new_observation =</span> test[<span class="dv">103</span><span class="op">:</span><span class="dv">104</span>,],</span>
 <span id="cb13-14"><a href="#cb13-14"></a>                                 <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)</span>
 <span id="cb13-15"><a href="#cb13-15"></a>new_ms</span></code></pre></div>
+<hr />
+</div>
+<div id="shiny" class="section level2">
+<h2>Shiny</h2>
+<p>Use the <code>widget_id</code> argument and <code>r2d3</code> package to render the <code>modelStudio</code> output in Shiny. See <a href="https://rstudio.github.io/r2d3/articles/shiny.html">Using r2d3 with Shiny</a> and consider the following example:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">library</span>(shiny)</span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="kw">library</span>(r2d3)</span>
+<span id="cb14-3"><a href="#cb14-3"></a></span>
+<span id="cb14-4"><a href="#cb14-4"></a></span>
+<span id="cb14-5"><a href="#cb14-5"></a>ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</span>
+<span id="cb14-6"><a href="#cb14-6"></a>  <span class="kw">textInput</span>(<span class="st">&quot;text&quot;</span>, <span class="kw">h3</span>(<span class="st">&quot;Text input&quot;</span>), </span>
+<span id="cb14-7"><a href="#cb14-7"></a>            <span class="dt">value =</span> <span class="st">&quot;Enter text...&quot;</span>),</span>
+<span id="cb14-8"><a href="#cb14-8"></a>  <span class="kw">uiOutput</span>(<span class="st">&#39;dashboard&#39;</span>)</span>
+<span id="cb14-9"><a href="#cb14-9"></a>)</span>
+<span id="cb14-10"><a href="#cb14-10"></a></span>
+<span id="cb14-11"><a href="#cb14-11"></a>server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output) {</span>
+<span id="cb14-12"><a href="#cb14-12"></a>  <span class="co">#:# id of div where modelStudio will appear</span></span>
+<span id="cb14-13"><a href="#cb14-13"></a>  WIDGET_ID =<span class="st"> &#39;MODELSTUDIO&#39;</span></span>
+<span id="cb14-14"><a href="#cb14-14"></a>  </span>
+<span id="cb14-15"><a href="#cb14-15"></a>  <span class="co">#:# create modelStudio </span></span>
+<span id="cb14-16"><a href="#cb14-16"></a>  <span class="kw">library</span>(modelStudio)</span>
+<span id="cb14-17"><a href="#cb14-17"></a>  <span class="kw">library</span>(DALEX)</span>
+<span id="cb14-18"><a href="#cb14-18"></a>  model &lt;-<span class="st"> </span><span class="kw">glm</span>(survived <span class="op">~</span>., <span class="dt">data =</span> titanic_imputed, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>)</span>
+<span id="cb14-19"><a href="#cb14-19"></a>  explainer &lt;-<span class="st"> </span><span class="kw">explain</span>(model,</span>
+<span id="cb14-20"><a href="#cb14-20"></a>                       <span class="dt">data =</span> titanic_imputed,</span>
+<span id="cb14-21"><a href="#cb14-21"></a>                       <span class="dt">y =</span> titanic_imputed<span class="op">$</span>survived,</span>
+<span id="cb14-22"><a href="#cb14-22"></a>                       <span class="dt">label =</span> <span class="st">&quot;Titanic GLM&quot;</span>,</span>
+<span id="cb14-23"><a href="#cb14-23"></a>                       <span class="dt">verbose =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb14-24"><a href="#cb14-24"></a>  ms &lt;-<span class="st"> </span><span class="kw">modelStudio</span>(explainer,</span>
+<span id="cb14-25"><a href="#cb14-25"></a>                    <span class="dt">widget_id =</span> WIDGET_ID,  <span class="co">#:# use the widget_id </span></span>
+<span id="cb14-26"><a href="#cb14-26"></a>                    <span class="dt">show_info =</span> <span class="ot">FALSE</span>)    </span>
+<span id="cb14-27"><a href="#cb14-27"></a>  ms<span class="op">$</span>elementId &lt;-<span class="st"> </span><span class="ot">NULL</span>                      <span class="co">#:# remove elementId to stop the warning</span></span>
+<span id="cb14-28"><a href="#cb14-28"></a></span>
+<span id="cb14-29"><a href="#cb14-29"></a>  <span class="co">#:# basic render d3 output</span></span>
+<span id="cb14-30"><a href="#cb14-30"></a>  output[[WIDGET_ID]] &lt;-<span class="st"> </span><span class="kw">renderD3</span>({</span>
+<span id="cb14-31"><a href="#cb14-31"></a>    ms</span>
+<span id="cb14-32"><a href="#cb14-32"></a>  })</span>
+<span id="cb14-33"><a href="#cb14-33"></a>  </span>
+<span id="cb14-34"><a href="#cb14-34"></a>  <span class="co">#:# use render ui to set proper width and height</span></span>
+<span id="cb14-35"><a href="#cb14-35"></a>  output<span class="op">$</span>dashboard &lt;-<span class="st"> </span><span class="kw">renderUI</span>({</span>
+<span id="cb14-36"><a href="#cb14-36"></a>    <span class="kw">d3Output</span>(WIDGET_ID, <span class="dt">width=</span>ms<span class="op">$</span>width, <span class="dt">height=</span>ms<span class="op">$</span>height)</span>
+<span id="cb14-37"><a href="#cb14-37"></a>  })</span>
+<span id="cb14-38"><a href="#cb14-38"></a>}</span>
+<span id="cb14-39"><a href="#cb14-39"></a></span>
+<span id="cb14-40"><a href="#cb14-40"></a><span class="kw">shinyApp</span>(<span class="dt">ui =</span> ui, <span class="dt">server =</span> server)</span></code></pre></div>
+<hr />
 </div>
 <div id="dalextra" class="section level2">
 <h2>DALEXtra</h2>
-<p>Use <code>explain_*()</code> functions from the <a href="https://github.com/ModelOriented/DALEXtra">DALEXtra</a> package to explain various models.</p>
+<p>Use <code>explain_*()</code> functions from the <a href="https://github.com/ModelOriented/DALEXtra/">DALEXtra</a> package to explain various models.</p>
 <p>Bellow basic example of making <code>modelStudio</code> for a <code>mlr</code> model using <code>explain_mlr()</code>.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">library</span>(DALEXtra)</span>
-<span id="cb14-2"><a href="#cb14-2"></a><span class="kw">library</span>(mlr)</span>
-<span id="cb14-3"><a href="#cb14-3"></a></span>
-<span id="cb14-4"><a href="#cb14-4"></a><span class="co"># fit a model</span></span>
-<span id="cb14-5"><a href="#cb14-5"></a>task &lt;-<span class="st"> </span><span class="kw">makeClassifTask</span>(<span class="dt">id =</span> <span class="st">&quot;task&quot;</span>, <span class="dt">data =</span> train, <span class="dt">target =</span> <span class="st">&quot;fired&quot;</span>)</span>
-<span id="cb14-6"><a href="#cb14-6"></a>learner &lt;-<span class="st"> </span><span class="kw">makeLearner</span>(<span class="st">&quot;classif.ranger&quot;</span>, <span class="dt">predict.type =</span> <span class="st">&quot;prob&quot;</span>)</span>
-<span id="cb14-7"><a href="#cb14-7"></a>model &lt;-<span class="st"> </span><span class="kw">train</span>(learner, task)</span>
-<span id="cb14-8"><a href="#cb14-8"></a></span>
-<span id="cb14-9"><a href="#cb14-9"></a><span class="co"># create an explainer for the model</span></span>
-<span id="cb14-10"><a href="#cb14-10"></a>explainer_mlr &lt;-<span class="st"> </span><span class="kw">explain_mlr</span>(model,</span>
-<span id="cb14-11"><a href="#cb14-11"></a>                             <span class="dt">data =</span> test,</span>
-<span id="cb14-12"><a href="#cb14-12"></a>                             <span class="dt">y =</span> test<span class="op">$</span>fired,</span>
-<span id="cb14-13"><a href="#cb14-13"></a>                             <span class="dt">label =</span> <span class="st">&quot;mlr&quot;</span>)</span>
-<span id="cb14-14"><a href="#cb14-14"></a></span>
-<span id="cb14-15"><a href="#cb14-15"></a><span class="co"># make a studio for the model</span></span>
-<span id="cb14-16"><a href="#cb14-16"></a><span class="kw">modelStudio</span>(explainer_mlr)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">library</span>(DALEXtra)</span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="kw">library</span>(mlr)</span>
+<span id="cb15-3"><a href="#cb15-3"></a></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="co"># fit a model</span></span>
+<span id="cb15-5"><a href="#cb15-5"></a>task &lt;-<span class="st"> </span><span class="kw">makeClassifTask</span>(<span class="dt">id =</span> <span class="st">&quot;task&quot;</span>, <span class="dt">data =</span> train, <span class="dt">target =</span> <span class="st">&quot;fired&quot;</span>)</span>
+<span id="cb15-6"><a href="#cb15-6"></a>learner &lt;-<span class="st"> </span><span class="kw">makeLearner</span>(<span class="st">&quot;classif.ranger&quot;</span>, <span class="dt">predict.type =</span> <span class="st">&quot;prob&quot;</span>)</span>
+<span id="cb15-7"><a href="#cb15-7"></a>model &lt;-<span class="st"> </span><span class="kw">train</span>(learner, task)</span>
+<span id="cb15-8"><a href="#cb15-8"></a></span>
+<span id="cb15-9"><a href="#cb15-9"></a><span class="co"># create an explainer for the model</span></span>
+<span id="cb15-10"><a href="#cb15-10"></a>explainer_mlr &lt;-<span class="st"> </span><span class="kw">explain_mlr</span>(model,</span>
+<span id="cb15-11"><a href="#cb15-11"></a>                             <span class="dt">data =</span> test,</span>
+<span id="cb15-12"><a href="#cb15-12"></a>                             <span class="dt">y =</span> test<span class="op">$</span>fired,</span>
+<span id="cb15-13"><a href="#cb15-13"></a>                             <span class="dt">label =</span> <span class="st">&quot;mlr&quot;</span>)</span>
+<span id="cb15-14"><a href="#cb15-14"></a></span>
+<span id="cb15-15"><a href="#cb15-15"></a><span class="co"># make a studio for the model</span></span>
+<span id="cb15-16"><a href="#cb15-16"></a><span class="kw">modelStudio</span>(explainer_mlr)</span></code></pre></div>
+<hr />
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>
 <ul>
-<li>Theoretical introduction to the plots: <a href="https://pbiecek.github.io/ema">Explanatory Model Analysis. Explore, Explain and Examine Predictive Models.</a></li>
+<li>Theoretical introduction to the plots: <a href="https://pbiecek.github.io/ema/">Explanatory Model Analysis. Explore, Explain and Examine Predictive Models.</a></li>
 <li>The input object is implemented in <a href="https://modeloriented.github.io/DALEX/">DALEX</a></li>
-<li>Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots are implemented in <a href="https://modeloriented.github.io/ingredients/">ingredients</a></li>
-<li>Break Down and Shapley Values plots are implemented in <a href="https://modeloriented.github.io/iBreakDown/">iBreakDown</a></li>
+<li>Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence explanations are implemented in <a href="https://modeloriented.github.io/ingredients/">ingredients</a></li>
+<li>Break Down and Shapley Values explanations are implemented in <a href="https://modeloriented.github.io/iBreakDown/">iBreakDown</a></li>
 </ul>
 </div>
 

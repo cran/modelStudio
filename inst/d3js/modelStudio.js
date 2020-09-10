@@ -14,7 +14,8 @@ r2d3.onResize(function() {
 /// load all data
 var obsData = data[0],
     fiData = data[1], pdData = data[2],
-    adData = data[3], fdData = data[4],
+    adData = data[3], rvData = data[4],
+    fdData = data[4],
     tvData = data[4], atData = data[5];
 
 /// load options
@@ -22,10 +23,12 @@ var TIME = options.time,
     modelName = options.model_name,
     variableNames = options.variable_names,
     dim = options.facet_dim,
-    footerText = options.footer_text,
+    versionText = options.version_text,
+    measureText = options.measure_text,
     dropDownData = options.drop_down_data,
     EDA = options.eda,
     WIDGET_ID = options.widget_id,
+    IS_TARGET_BINARY = options.is_target_binary,
     SCALE_PLOT = options.scale_plot,
     SHOW_BOXPLOT = options.show_boxplot,
     SHOW_SUBTITLE = options.show_subtitle,
@@ -75,6 +78,10 @@ var TIME = options.time,
     adLineSize = options.ad_line_size || lineSize,
     adBarColor = options.ad_bar_color || barColor,
     adLineColor = options.ad_line_color || lineColor,
+    rvTitle = options.rv_title,
+    rvSubtitle = options.rv_subtitle || subTitle,
+    rvPointSize = options.rv_point_size || pointSize,
+    rvPointColor = options.tv_point_color || pointColor,
     fdTitle = options.fd_title,
     fdSubtitle = options.fd_subtitle || subTitle,
     fdBarWidth = options.fd_bar_width || barWidth,
@@ -90,7 +97,8 @@ var TIME = options.time,
     atPointSize = options.at_point_size || pointSize,
     atBarColor = options.at_bar_color || barColor,
     atLineColor = options.at_line_color || lineColor,
-    atPointColor = options.at_point_color || pointColor;
+    atPointColor = options.at_point_color || pointColor,
+    telemetry = options.telemetry;
 
 /// for observation choice
 var observationIds = Object.keys(obsData);
@@ -126,6 +134,7 @@ if (!SHOW_SUBTITLE) {
   fiSubtitle = null;
   pdSubtitle = null;
   adSubtitle = null;
+  rvSubtitle = null;
   fdSubtitle = null;
   tvSubtitle = null;
   atSubtitle = null;
@@ -133,16 +142,17 @@ if (!SHOW_SUBTITLE) {
 
 /// for plot chosing
 var notVisiblePlots = EDA ?
-                       [{id:"BD", text: bdTitle + " [Local]"},
+                      [{id:"BD", text: bdTitle + " [Local]"},
                        {id:"SV", text: svTitle + " [Local]"},
                        {id:"CP", text: cpTitle + " [Local]"},
                        {id:"FI", text: fiTitle + " [Global]"},
                        {id:"PD", text: pdTitle + " [Global]"},
                        {id:"AD", text: adTitle + " [Global]"},
+                       {id:"RV", text: rvTitle + " [Global]"},
                        {id:"FD", text: fdTitle + " [EDA]"},
                        {id:"TV", text: tvTitle + " [EDA]"},
                        {id:"AT", text: atTitle + " [EDA]"}] :
-                       [{id:"BD", text: bdTitle + " [Local]"},
+                      [{id:"BD", text: bdTitle + " [Local]"},
                        {id:"SV", text: svTitle + " [Local]"},
                        {id:"CP", text: cpTitle + " [Local]"},
                        {id:"FI", text: fiTitle + " [Global]"},
@@ -163,6 +173,7 @@ for (let i = 0; i < dim[0]; i++) {
 }
 
 ///:\\\
+if (telemetry) startTelemetrySession();
 initializeStudio();
 ///:\\\
 
@@ -265,9 +276,15 @@ function initializeStudio() {
 
   BOTTOM_G.append("text")
           .attr("class", "footerTitle")
-          .attr("x", studioWidth - 15 - getTextWidth(footerText, 12, 'Fira Sans, sans-serif'))
+          .attr("x", studioWidth - 15 - getTextWidth(versionText, 12, 'Fira Sans, sans-serif'))
           .attr("y", studioHeight - studioMargin.bottom + 25)
-          .text(footerText);
+          .text(versionText);
+
+  BOTTOM_G.append("text")
+          .attr("class", "footerTitle")
+          .attr("x", 15)
+          .attr("y", studioHeight - studioMargin.bottom + 25)
+          .text(measureText);
 
   BOTTOM_G.append("line")
           .attr("class", "footerLine")
@@ -467,4 +484,44 @@ function initializeStudio() {
   if (facetData.length >= 2) {
     svg.selectAll('.enterChoiceButton').filter('#enterChoiceButton1').dispatch('click');
   }
+}
+
+///:\\\
+let telemetrySession = null;
+function startTelemetrySession() {
+  fetch('https://arena.mini.pw.edu.pl/telemetry/session', {
+    method: 'post',
+    body: JSON.stringify({
+      application: 'modelStudio',
+      application_version: telemetry.version,
+      data: JSON.stringify({
+        ...telemetry
+      })
+    }),
+    headers: {
+      'Accept': 'plain/text',
+      'Content-Type': 'application/json'
+    },
+  }).then(response => {
+    return response.text()
+  }).then(key => {
+    telemetrySession = key
+  }).catch(console.error)
+
+  setInterval(() => {
+    if (!telemetrySession) return
+    fetch('https://arena.mini.pw.edu.pl/telemetry/state', {
+      method: 'post',
+      body: JSON.stringify({
+        data: JSON.stringify({
+          plots: visiblePlots.map(p => p.id)
+        }),
+        uuid: telemetrySession
+      }),
+      headers: {
+        'Accept': 'plain/text',
+        'Content-Type': 'application/json'
+      },
+    })
+  }, 1000 * 20)
 }

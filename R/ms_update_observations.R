@@ -2,7 +2,7 @@
 #'
 #' @description
 #' This function calculates local explanations on new observations and adds them
-#' to a \code{modelStudio} object.
+#' to the \code{modelStudio} object.
 #'
 #' @param object A \code{modelStudio} created with \code{modelStudio()}.
 #' @param explainer An \code{explainer} created with \code{DALEX::explain()}.
@@ -15,8 +15,11 @@
 #'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}
 #' @param show_info Verbose a progress on the console. Default is \code{TRUE}.
 #' @param parallel Speed up the computation using \code{parallelMap::parallelMap()}.
-#'  See \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
+#'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
 #'  This might interfere with showing progress using \code{show_info}.
+#' @param widget_id Use an explicit element ID for the widget (rather than an automatically generated one).
+#'  Useful e.g. when using \code{modelStudio} with Shiny.
+#'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#shiny-1}{\bold{vignette}}.
 #' @param overwrite Overwrite existing observations and their explanations.
 #'  Default is \code{FALSE} which means add new observations to the existing ones.
 #' @param ... Other parameters.
@@ -27,14 +30,15 @@
 #'
 #' \itemize{
 #'   \item The input object is implemented in \href{https://modeloriented.github.io/DALEX/}{\bold{DALEX}}
-#'   \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence plots
-#' are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
-#'   \item Break Down and Shapley Values plots are implemented in \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
+#'   \item Feature Importance, Ceteris Paribus, Partial Dependence and Accumulated Dependence explanations
+#'    are implemented in \href{https://modeloriented.github.io/ingredients/}{\bold{ingredients}}
+#'   \item Break Down and Shapley Values explanations are implemented in
+#'    \href{https://modeloriented.github.io/iBreakDown/}{\bold{iBreakDown}}
 #' }
 #'
 #' @seealso
-#' Vignettes: \href{https://modeloriented.github.io/modelStudio/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
-#' and \href{https://modeloriented.github.io/modelStudio/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
+#' Vignettes: \href{https://modelstudio.drwhy.ai/articles/ms-r-python-examples.html}{\bold{modelStudio - R & Python examples}}
+#' and \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html}{\bold{modelStudio - perks and features}}
 #'
 #' @examples
 #' library("DALEX")
@@ -49,7 +53,8 @@
 #'                              y = titanic_imputed$survived)
 #'
 #' # make a studio for the model
-#' ms <- modelStudio(explainer_titanic)
+#' ms <- modelStudio(explainer_titanic,
+#'                   N = 200,  B = 5) # faster example
 #'
 #' \donttest{
 #'
@@ -81,21 +86,23 @@ ms_update_observations <- function(object,
                                    B = 10,
                                    show_info = TRUE,
                                    parallel = FALSE,
+                                   widget_id = NULL,
                                    overwrite = FALSE,
                                    ...) {
-
-  #:# TODO: clean code in this function #:#
 
   stopifnot("modelStudio" %in% class(object))
   stopifnot("explainer" %in% class(explainer))
 
-  options <- object$x$options
   model <- explainer$model
   data <- explainer$data
   y <- explainer$y
   predict_function <- explainer$predict_function
   label <- explainer$label
 
+  # extract old options
+  options <- object$x$options
+
+  #:# checks
   if (is.null(rownames(data))) {
     rownames(data) <- 1:nrow(data)
   }
@@ -115,8 +122,9 @@ ms_update_observations <- function(object,
 
   check_single_prediction <- try(predict_function(model, new_observation[1,, drop = FALSE]), silent = TRUE)
   if ("try-error" %in% class(check_single_prediction)) {
-    stop("`predict_function` returns an error when executed on `new_observation[1,, drop = FALSE]` \n")
+    stop("`explainer$predict_function` returns an error when executed on `new_observation[1,, drop = FALSE]` \n")
   }
+  #:#
 
   ## get proper names of features that arent target
   is_y <- is_y_in_data(data, y)
@@ -236,14 +244,18 @@ ms_update_observations <- function(object,
   temp <- jsonlite::toJSON(list(obs_list, old_data[[2]], old_data[[3]],
                                 old_data[[4]], old_data[[5]], old_data[[6]]),
                            auto_unbox = TRUE)
-  widget_id <- paste0("widget-", digest::digest(temp))
+  widget_id <- ifelse(!is.null(widget_id),
+                      widget_id,
+                      paste0("widget-", digest::digest(temp)))
 
   #:# extract old options and update them
   new_options <- options
   new_options$widget_id <- widget_id
   new_options$variable_names <- variable_names
-  new_options$footer_text <- paste0("Site built with modelStudio v", packageVersion("modelStudio"),
-                                    " on ", format(Sys.time(), usetz = FALSE))
+  new_options$footer_text <- paste0("Site built with modelStudio v",
+                                    as.character(packageVersion("modelStudio")),
+                                    " on ",
+                                    format(Sys.time(), usetz = FALSE))
   new_options$drop_down_data <-  jsonlite::toJSON(drop_down_data)
 
   options("r2d3.shadow" = FALSE) # set this option to avoid using shadow-root
