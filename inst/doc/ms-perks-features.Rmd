@@ -81,6 +81,12 @@ modelStudio(explainer,
             new_observation_y  = true_labels)
 ```
 
+If `new_observation = NULL`, then choose `new_observation_n` observations, evenly spread by the order of `y_hat`. This shall always include the observations, which ids are `which.min(y_hat)` and `which.max(y_hat)`.
+
+```{r eval = FALSE}
+modelStudio(explainer, new_observation_n = 5) # default is 3
+```
+
 ### grid size
 
 Achieve bigger or smaller `modelStudio` grid with `facet_dim` parameter.
@@ -114,12 +120,13 @@ modelStudio(explainer,
 
 - `N` is a number of observations used for calculation of
 [Partial Dependence](https://pbiecek.github.io/ema/partialDependenceProfiles.html)
-and [Accumulated Dependence](https://pbiecek.github.io/ema/accumulatedLocalProfiles.html) Profiles. 
-- `10*N` is a number of observations used for calculation of
-[Feature Importance](https://pbiecek.github.io/ema/featureImportance.html).
+and [Accumulated Dependence](https://pbiecek.github.io/ema/accumulatedLocalProfiles.html) Profiles (default is `300`). 
+- `N_fi` is a number of observations used for calculation of
+[Feature Importance](https://pbiecek.github.io/ema/featureImportance.html) (default is `10*N`).
 - `B` is a number of permutation rounds used for calculation of
-[Shapley Values](https://pbiecek.github.io/ema/shapley.html) and
-[Feature Importance](https://pbiecek.github.io/ema/featureImportance.html).
+[Shapley Values](https://pbiecek.github.io/ema/shapley.html) (default is `10`).
+- `B_fi` is a number of permutation rounds used for calculation of
+[Feature Importance](https://pbiecek.github.io/ema/featureImportance.html) (default is `B`).
 
 Decrease `N` and `B` parameters to lower the computation time or increase
 them to get more accurate empirical results.
@@ -278,11 +285,11 @@ server <- function(input, output) {
   library(modelStudio)
   library(DALEX)
   model <- glm(survived ~., data = titanic_imputed, family = "binomial")
-  explainer <- explain(model,
-                       data = titanic_imputed,
-                       y = titanic_imputed$survived,
-                       label = "Titanic GLM",
-                       verbose = FALSE)
+  explainer <- DALEX::explain(model,
+                              data = titanic_imputed,
+                              y = titanic_imputed$survived,
+                              label = "Titanic GLM",
+                              verbose = FALSE)
   ms <- modelStudio(explainer,
                     widget_id = WIDGET_ID,  #:# use the widget_id 
                     show_info = FALSE)    

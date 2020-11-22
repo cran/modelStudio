@@ -41,8 +41,7 @@ knitr::opts_chunk$set(
 #  rownames(new_observation) <- c("id1", "id2")
 #  
 #  # make a studio for the model
-#  modelStudio(explainer,
-#              new_observation)
+#  modelStudio(explainer, new_observation)
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  # load packages and data
@@ -77,8 +76,7 @@ knitr::opts_chunk$set(
 #  rownames(new_observation) <- c("id1", "id2")
 #  
 #  # make a studio for the model
-#  modelStudio(explainer,
-#              new_observation)
+#  modelStudio(explainer, new_observation)
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  # load packages and data
@@ -112,8 +110,7 @@ knitr::opts_chunk$set(
 #  rownames(new_observation) <- c("id1", "id2")
 #  
 #  # make a studio for the model
-#  modelStudio(explainer,
-#              new_observation,
+#  modelStudio(explainer, new_observation,
 #              options = ms_options(margin_left = 140))
 
 ## ----eval = FALSE-------------------------------------------------------------
@@ -147,8 +144,7 @@ knitr::opts_chunk$set(
 #  rownames(new_observation) <- c("id1", "id2")
 #  
 #  # make a studio for the model
-#  modelStudio(explainer,
-#              new_observation)
+#  modelStudio(explainer, new_observation)
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  # load packages and data
@@ -185,8 +181,7 @@ knitr::opts_chunk$set(
 #  rownames(new_observation) <- c("id1", "id2")
 #  
 #  # make a studio for the model
-#  modelStudio(explainer,
-#              new_observation,
+#  modelStudio(explainer, new_observation,
 #              B = 5)
 #  
 #  # shutdown h2o
@@ -261,8 +256,7 @@ knitr::opts_chunk$set(
 #  rownames(new_observation) <- c("id1", "id2")
 #  
 #  # make a studio for the model
-#  modelStudio(explainer,
-#              new_observation)
+#  modelStudio(explainer, new_observation)
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  # package for pickle load

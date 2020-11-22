@@ -27,18 +27,19 @@
 #' @param explainer An \code{explainer} created with \code{DALEX::explain()}.
 #' @param new_observation New observations with columns that correspond to variables used in the model.
 #' @param new_observation_y True label for \code{new_observation} (optional).
+#' @param new_observation_n Number of observations to be taken from the \code{explainer$data} if \code{new_observation = NULL}.
+#'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#instance-explanations}{\bold{vignette}}
 #' @param facet_dim Dimensions of the grid. Default is \code{c(2,2)}.
 #' @param time Time in ms. Set the animation length. Default is \code{500}.
 #' @param max_features Maximum number of features to be included in BD and SV plots.
 #'  Default is \code{10}.
 #' @param max_vars An alias for \code{max_features}. If provided, it will override the value.
-#' @param N Number of observations used for the calculation of PD and AD.
-#'  \code{10*N} is a number of observations used for the calculation of FI.
-#'  Default \code{N} is \code{300}.
+#' @param N Number of observations used for the calculation of PD and AD. Default is \code{300}.
 #'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}
-#' @param B Number of permutation rounds used for calculation of SV and FI.
-#'  Default is \code{10}.
+#' @param N_fi Number of observations used for the calculation of FI. Default is \code{10*N}.
+#' @param B Number of permutation rounds used for calculation of SV. Default is \code{10}.
 #'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}
+#' @param B_fi Number of permutation rounds used for calculation of FI. Default is \code{B}.
 #' @param eda Compute EDA plots and Residuals vs Feature plot, which adds the data to the dashboard. Default is \code{TRUE}.
 #' @param show_info Verbose a progress on the console. Default is \code{TRUE}.
 #' @param parallel Speed up the computation using \code{parallelMap::parallelMap()}.
@@ -52,6 +53,8 @@
 #' @param widget_id Use an explicit element ID for the widget (rather than an automatically generated one).
 #'  Useful e.g. when using \code{modelStudio} with Shiny.
 #'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#shiny-1}{\bold{vignette}}.
+#' @param license Path to the file containing the license (\code{con} parameter passed to \code{readLines()}).
+#'  It can be used e.g. to include the license for \code{explainer$data} as a comment in the source of \code{.html} output file.
 #' @param telemetry The dashboard gathers useful, but not sensitive, information about how it is being used (e.g. computation length,
 #'  package version, dashboard dimensions). This is for the development purposes only and can be blocked by setting \code{telemetry} to \code{FALSE}.
 #' @param ... Other parameters.
@@ -168,17 +171,21 @@ modelStudio <- function(explainer, ...) {
 modelStudio.explainer <- function(explainer,
                                   new_observation = NULL,
                                   new_observation_y = NULL,
+                                  new_observation_n = 3,
                                   facet_dim = c(2,2),
                                   time = 500,
                                   max_features = 10,
                                   N = 300,
+                                  N_fi = N*10,
                                   B = 10,
+                                  B_fi = B,
                                   eda = TRUE,
                                   show_info = TRUE,
                                   parallel = FALSE,
                                   options = ms_options(),
                                   viewer = "external",
                                   widget_id = NULL,
+                                  license = NULL,
                                   telemetry = TRUE,
                                   max_vars = NULL,
                                   ...) {
@@ -196,11 +203,16 @@ modelStudio.explainer <- function(explainer,
   model_type <- explainer$model_info$type
 
   if (!is.null(max_vars)) max_features <- max_vars
+  if (is.null(N)) stop("`N` argument must be an integer")
+  #if (identical(N_fi, numeric(0))) N_fi <- NULL
 
   if (is.null(new_observation)) {
-    if (show_info) message("`new_observation` argument is NULL.\n",
-                           "Observations needed to calculate local explanations are taken at random from the data.\n")
-    new_observation <- ingredients::select_sample(data, 3)
+    if (show_info) message(paste0("`new_observation` argument is NULL. ",
+                                  "`new_observation_n` observations needed to ",
+                                  "calculate local explanations are taken from the data.\n"))
+    ret <- sample_new_observation(explainer, new_observation_n)
+    new_observation <- ret[['no']]
+    new_observation_y <- ret[['no_y']]
 
   } else if (is.null(dim(new_observation))) {
     warning("`new_observation` argument is not a data.frame nor a matrix, coerced to data.frame\n")
@@ -253,9 +265,11 @@ modelStudio.explainer <- function(explainer,
 
   ## later update progress bar after all explanation functions
   if (show_info) {
+    increment <- ifelse(eda, 1, 0)
+
     pb <- progress_bar$new(
       format = "  Calculating :what \n    Elapsed time: :elapsedfull ETA::eta ", # :percent  [:bar]
-      total = (3*B + 2 + 1)*obs_count + (2*B + 3*B + B) + 1,
+      total = 1 + increment + (3*B + 2 + 1)*obs_count + (2*B_fi + N/30 + N/10) + 2,
       show_after = 0,
       width = 110
     )
@@ -265,10 +279,10 @@ modelStudio.explainer <- function(explainer,
   ## count only once
   fi <- calculate(
     ingredients::feature_importance(
-        model, data, y, predict_function, variables = variable_names, B = B, N = 10*N,
+        model, data, y, predict_function, variables = variable_names, B = B_fi, N = N_fi,
         loss_function = loss_function
         ),
-    "ingredients::feature_importance", show_info, pb, 2*B)
+    "ingredients::feature_importance", show_info, pb, 2*B_fi)
 
   which_numerical <- which_variables_are_numeric(data)
 
@@ -278,13 +292,13 @@ modelStudio.explainer <- function(explainer,
       ingredients::partial_dependence(
           model, data, predict_function, variable_type = "numerical", N = N,
           variable_splits_type=variable_splits_type),
-      "ingredients::partial_dependence (numerical)", show_info, pb, B)
+      "ingredients::partial_dependence (numerical)", show_info, pb, N/30)
     pd_c <- NULL
     ad_n <- calculate(
       ingredients::accumulated_dependence(
           model, data, predict_function, variable_type = "numerical", N = N,
           variable_splits_type=variable_splits_type),
-      "ingredients::accumulated_dependence (numerical)", show_info, pb, 3*B)
+      "ingredients::accumulated_dependence (numerical)", show_info, pb, N/10)
     ad_c <- NULL
   } else if (all(!which_numerical)) {
     pd_n <- NULL
@@ -292,45 +306,51 @@ modelStudio.explainer <- function(explainer,
       ingredients::partial_dependence(
           model, data, predict_function, variable_type = "categorical", N = N,
           variable_splits_type=variable_splits_type),
-      "ingredients::partial_dependence (categorical)", show_info, pb, B)
+      "ingredients::partial_dependence (categorical)", show_info, pb, N/30)
     ad_n <- NULL
     ad_c <- calculate(
       ingredients::accumulated_dependence(
           model, data, predict_function, variable_type = "categorical", N = N,
           variable_splits_type=variable_splits_type),
-      "ingredients::accumulated_dependence (categorical)", show_info, pb, 3*B)
+      "ingredients::accumulated_dependence (categorical)", show_info, pb, N/10)
   } else {
     pd_n <- calculate(
       ingredients::partial_dependence(
         model, data, predict_function, variable_type = "numerical", N = N,
         variable_splits_type=variable_splits_type),
-      "ingredients::partial_dependence (numerical)", show_info, pb, B/2)
+      "ingredients::partial_dependence (numerical)", show_info, pb, N/60)
     pd_c <- calculate(
       ingredients::partial_dependence(
         model, data, predict_function, variable_type = "categorical", N = N,
         variable_splits_type=variable_splits_type),
-      "ingredients::partial_dependence (categorical)", show_info, pb, B/2)
+      "ingredients::partial_dependence (categorical)", show_info, pb, N/60)
     ad_n <- calculate(
       ingredients::accumulated_dependence(
         model, data, predict_function, variable_type = "numerical", N = N,
         variable_splits_type=variable_splits_type),
-      "ingredients::accumulated_dependence (numerical)", show_info, pb, 2*B)
+      "ingredients::accumulated_dependence (numerical)", show_info, pb, 2*N/30)
     ad_c <- calculate(
       ingredients::accumulated_dependence(
         model, data, predict_function, variable_type = "categorical", N = N,
         variable_splits_type=variable_splits_type),
-      "ingredients::accumulated_dependence (categorical)", show_info, pb, B)
+      "ingredients::accumulated_dependence (categorical)", show_info, pb, N/30)
   }
 
   fi_data <- prepare_feature_importance(fi, max_features, options$show_boxplot,
                                         attr(loss_function, "loss_name"), ...)
   pd_data <- prepare_partial_dependence(pd_n, pd_c, variables = variable_names)
   ad_data <- prepare_accumulated_dependence(ad_n, ad_c, variables = variable_names)
-  mp_data <- DALEX::model_performance(explainer)$measures
+  mp_ret <- calculate(
+    DALEX::model_performance(explainer),
+    "DALEX::model_performance", show_info, pb, 1)
+  mp_data <- mp_ret$measures
 
   if (eda) {
     #:# fd_data is used by targetVs and residualsVs plots
-    residuals <- DALEX::model_diagnostics(explainer)$residuals
+    md_ret <- calculate(
+      DALEX::model_diagnostics(explainer),
+      "DALEX::model_diagnostics", show_info, pb, 1)
+    residuals <- md_ret$residuals
     fd_data <- prepare_feature_distribution(data, y, variables = variable_names,
                                             residuals = residuals)
     at_data <- prepare_average_target(data, y, variables = variable_names)
@@ -416,11 +436,13 @@ modelStudio.explainer <- function(explainer,
                       paste0("widget-", digest::digest(temp)))
 
   # prepare observation data for drop down
-  between <- " - "
-  if (is.null(new_observation_y)) new_observation_y <- between <- ""
-  drop_down_data <- as.data.frame(cbind(rownames(obs_data),
-                                        paste0(rownames(obs_data), between, new_observation_y)),
-                                  stringsAsFactors=TRUE)
+  str_between <- " | y: "
+  str_before <- "id: "
+  if (is.null(new_observation_y)) new_observation_y <- str_between <- str_before <- ""
+  drop_down_data <- as.data.frame(
+    cbind(rownames(obs_data),
+    paste0(str_before, rownames(obs_data), str_between, new_observation_y)),
+    stringsAsFactors=TRUE)
   colnames(drop_down_data) <- c("id", "text")
 
   # prepare footer text and ms title
@@ -454,7 +476,10 @@ modelStudio.explainer <- function(explainer,
                               obsCount = obs_count)
   }
 
+  if (!is.null(license)) options$license <- paste(readLines(license), collapse=" ")
   if (is.null(options$ms_title)) options$ms_title <- paste0("Interactive Studio for ", label, " Model")
+  if (!is.null(options$ms_subtitle)) options$ms_margin_top <- options$ms_margin_top + 40
+
   options <- c(list(time = time,
                     model_name = label,
                     variable_names = variable_names,
@@ -490,13 +515,16 @@ modelStudio.explainer <- function(explainer,
                     sizing = sizing_policy,
                     elementId = widget_id,
                     width = facet_dim[2]*(options$w + options$margin_left + options$margin_right),
-                    height = 100 + facet_dim[1]*(options$h + options$margin_top + options$margin_bottom)
+                    height = options$ms_margin_top + options$ms_margin_bottom +
+                             facet_dim[1]*(options$h + options$margin_top + options$margin_bottom)
                   )
 
   model_studio$x$script <- remove_file_paths(model_studio$x$script, "js")
   model_studio$x$style <- remove_file_paths(model_studio$x$style, "css")
 
   class(model_studio) <- c(class(model_studio), "modelStudio")
+
+  if (show_info) pb$tick(1, tokens = list(what = "..."))
 
   model_studio
 }
@@ -591,6 +619,7 @@ is_binary <- function(y) {
   is.numeric(y) & length(unique(y)) == 2
 }
 
+# safety check for explainer
 check_explainer <- function(explainer) {
 
   if (is.null(explainer$data))
@@ -617,4 +646,24 @@ check_explainer <- function(explainer) {
     explainer$residuals <- as.vector(explainer$residuals)
 
   explainer
+}
+
+# choose observations
+sample_new_observation <- function(explainer, new_observation_n = 3) {
+  if (is.null(explainer$y_hat)) {
+    y_hat <- try(predict(explainer), silent = TRUE)
+    if (class(y_hat)[1] == "try-error")
+      stop('`predict(explainer)` returns an error')
+  } else {
+    y_hat <- explainer$y_hat
+  }
+
+  if (new_observation_n >= dim(explainer$data)[1]) {
+    new_observation_n <- dim(explainer$data)[1]
+  }
+
+  ids <- unique(round(seq(1, length(y_hat), length.out = new_observation_n)))
+  new_observation_ids <- order(y_hat)[ids]
+
+  list(no = explainer$data[new_observation_ids,], no_y = explainer$y[new_observation_ids])
 }

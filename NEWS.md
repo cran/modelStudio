@@ -1,3 +1,11 @@
+# modelStudio 2.1.0
+* **DEFAULTS CHANGES**: if `new_observation = NULL` then choose `new_observation_n = 3` observations, evenly spread by the order of `y_hat`. This shall always include the observations, which ids are `which.min(y_hat)` and `which.max(y_hat)`. Additionally, improve the observation dropdown text in dashboard. [(#94)](https://github.com/ModelOriented/modelStudio/issues/94)
+* updated the progress printing
+* this version requires `DALEX v2.0.1`
+* added new options to `ms_options`: `ms_subtitle`, `ms_margin_top` and `ms_margin_bottom`
+* added new parameters to `modelStudio()`: `N_fi = 10*N` and `B_fi = B`
+* added new `license` parameter to `modelStudio()` which allows to specify the connection for `readLines()` (e.g. `'LICENSE'`) which will add file contents into the HTML output as a comment
+
 # modelStudio 2.0.0
 * this version requires `DALEX v2.0`, `ingredients v2.0` and `iBreakDown v1.3.1`
 * The dashboard gathers useful, but not sensitive, information about how it is being used (e.g. computation length, package version, dashboard dimensions). This is for the development purposes only and can be blocked by setting `telemetry` to `FALSE`.

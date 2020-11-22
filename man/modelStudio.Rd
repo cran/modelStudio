@@ -11,17 +11,21 @@ modelStudio(explainer, ...)
   explainer,
   new_observation = NULL,
   new_observation_y = NULL,
+  new_observation_n = 3,
   facet_dim = c(2, 2),
   time = 500,
   max_features = 10,
   N = 300,
+  N_fi = N * 10,
   B = 10,
+  B_fi = B,
   eda = TRUE,
   show_info = TRUE,
   parallel = FALSE,
   options = ms_options(),
   viewer = "external",
   widget_id = NULL,
+  license = NULL,
   telemetry = TRUE,
   max_vars = NULL,
   ...
@@ -36,6 +40,9 @@ modelStudio(explainer, ...)
 
 \item{new_observation_y}{True label for \code{new_observation} (optional).}
 
+\item{new_observation_n}{Number of observations to be taken from the \code{explainer$data} if \code{new_observation = NULL}.
+See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#instance-explanations}{\bold{vignette}}}
+
 \item{facet_dim}{Dimensions of the grid. Default is \code{c(2,2)}.}
 
 \item{time}{Time in ms. Set the animation length. Default is \code{500}.}
@@ -43,14 +50,15 @@ modelStudio(explainer, ...)
 \item{max_features}{Maximum number of features to be included in BD and SV plots.
 Default is \code{10}.}
 
-\item{N}{Number of observations used for the calculation of PD and AD.
-\code{10*N} is a number of observations used for the calculation of FI.
-Default \code{N} is \code{300}.
+\item{N}{Number of observations used for the calculation of PD and AD. Default is \code{300}.
 See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}}
 
-\item{B}{Number of permutation rounds used for calculation of SV and FI.
-Default is \code{10}.
+\item{N_fi}{Number of observations used for the calculation of FI. Default is \code{10*N}.}
+
+\item{B}{Number of permutation rounds used for calculation of SV. Default is \code{10}.
 See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}}
+
+\item{B_fi}{Number of permutation rounds used for calculation of FI. Default is \code{B}.}
 
 \item{eda}{Compute EDA plots and Residuals vs Feature plot, which adds the data to the dashboard. Default is \code{TRUE}.}
 
@@ -70,6 +78,9 @@ Use \code{browser} to display in an external browser or
 \item{widget_id}{Use an explicit element ID for the widget (rather than an automatically generated one).
 Useful e.g. when using \code{modelStudio} with Shiny.
 See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#shiny-1}{\bold{vignette}}.}
+
+\item{license}{Path to the file containing the license (\code{con} parameter passed to \code{readLines()}).
+It can be used e.g. to include the license for \code{explainer$data} as a comment in the source of \code{.html} output file.}
 
 \item{telemetry}{The dashboard gathers useful, but not sensitive, information about how it is being used (e.g. computation length,
 package version, dashboard dimensions). This is for the development purposes only and can be blocked by setting \code{telemetry} to \code{FALSE}.}

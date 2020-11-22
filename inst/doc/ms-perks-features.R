@@ -44,6 +44,9 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 #              new_observation_y  = true_labels)
 
 ## ----eval = FALSE-------------------------------------------------------------
+#  modelStudio(explainer, new_observation_n = 5) # default is 3
+
+## ----eval = FALSE-------------------------------------------------------------
 #  # small dashboard with 2 panels
 #  modelStudio(explainer,
 #              facet_dim = c(1,2))
@@ -158,11 +161,11 @@ knitr::kable(head(train), digits = 2, caption = "DALEX::HR dataset")
 #    library(modelStudio)
 #    library(DALEX)
 #    model <- glm(survived ~., data = titanic_imputed, family = "binomial")
-#    explainer <- explain(model,
-#                         data = titanic_imputed,
-#                         y = titanic_imputed$survived,
-#                         label = "Titanic GLM",
-#                         verbose = FALSE)
+#    explainer <- DALEX::explain(model,
+#                                data = titanic_imputed,
+#                                y = titanic_imputed$survived,
+#                                label = "Titanic GLM",
+#                                verbose = FALSE)
 #    ms <- modelStudio(explainer,
 #                      widget_id = WIDGET_ID,  #:# use the widget_id
 #                      show_info = FALSE)
