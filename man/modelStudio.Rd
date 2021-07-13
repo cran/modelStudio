@@ -17,6 +17,7 @@ modelStudio(explainer, ...)
   max_features = 10,
   N = 300,
   N_fi = N * 10,
+  N_sv = N * 3,
   B = 10,
   B_fi = B,
   eda = TRUE,
@@ -28,6 +29,7 @@ modelStudio(explainer, ...)
   license = NULL,
   telemetry = TRUE,
   max_vars = NULL,
+  verbose = NULL,
   ...
 )
 }
@@ -54,6 +56,8 @@ Default is \code{10}.}
 See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}}
 
 \item{N_fi}{Number of observations used for the calculation of FI. Default is \code{10*N}.}
+
+\item{N_sv}{Number of observations used for the calculation of SV. Default is \code{3*N}.}
 
 \item{B}{Number of permutation rounds used for calculation of SV. Default is \code{10}.
 See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}}
@@ -86,6 +90,8 @@ It can be used e.g. to include the license for \code{explainer$data} as a commen
 package version, dashboard dimensions). This is for the development purposes only and can be blocked by setting \code{telemetry} to \code{FALSE}.}
 
 \item{max_vars}{An alias for \code{max_features}. If provided, it will override the value.}
+
+\item{verbose}{An alias for \code{show_info}. If provided, it will override the value.}
 }
 \value{
 An object of the \code{r2d3, htmlwidget, modelStudio} class.
@@ -182,6 +188,7 @@ if (requireNamespace("xgboost", quietly=TRUE)) {
   explainer_HR <- explain(model_HR,
                           data = HR_matrix,
                           y = HR$status == "fired",
+                          type = "classification",
                           label = "xgboost")
 
   # pick observations

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hubert Baniecki" />
 
-<meta name="date" content="2021-04-20" />
+<meta name="date" content="2021-07-13" />
 
 <title>modelStudio - R &amp; Python examples</title>
 
@@ -141,7 +141,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <h1 class="title toc-ignore">modelStudio - R &amp; Python examples</h1>
 <h4 class="author">Hubert Baniecki</h4>
-<h4 class="date">2021-04-20</h4>
+<h4 class="date">2021-07-13</h4>
 
 
 
@@ -155,7 +155,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;DALEXtra&quot;</span>)</span></code></pre></div>
 <div id="mlr-dashboard" class="section level3">
 <h3>mlr <a href="https://modelstudio.drwhy.ai/mlr.html">dashboard</a></h3>
-<p>In this example we will make a studio for the <code>ranger</code> model on <code>apartments</code> data.</p>
+<p>In this example, we make a studio for the <code>ranger</code> model on the <code>apartments</code> data.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages and data</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlr)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DALEXtra)</span>
@@ -188,7 +188,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="mlr3-dashboard" class="section level3">
 <h3>mlr3 <a href="https://modelstudio.drwhy.ai/mlr3.html">dashboard</a></h3>
-<p>In this example we will make a studio for the <code>ranger</code> model on <code>titanic</code> data.</p>
+<p>In this example, we make a studio for the <code>ranger</code> model on the <code>titanic</code> data.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages and data</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlr3)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlr3learners)</span>
@@ -225,7 +225,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="xgboost-dashboard" class="section level3">
 <h3>xgboost <a href="https://modelstudio.drwhy.ai/xgboost.html">dashboard</a></h3>
-<p>In this example we will make a studio for the <code>xgboost</code> model on <code>titanic</code> data.</p>
+<p>In this example, we make a studio for the <code>xgboost</code> model on the <code>titanic</code> data.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages and data</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xgboost)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DALEX)</span>
@@ -250,19 +250,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>explainer <span class="ot">&lt;-</span> <span class="fu">explain</span>(model,</span>
 <span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> test_matrix,</span>
 <span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>                     <span class="at">y =</span> test<span class="sc">$</span>survived,</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>                     <span class="at">label =</span> <span class="st">&quot;xgboost&quot;</span>)</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="co"># pick observations</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>new_observation <span class="ot">&lt;-</span> test_matrix[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, , drop<span class="ot">=</span><span class="cn">FALSE</span>]</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(new_observation) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;id1&quot;</span>, <span class="st">&quot;id2&quot;</span>)</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="co"># make a studio for the model</span></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="fu">modelStudio</span>(explainer, new_observation,</span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>            <span class="at">options =</span> <span class="fu">ms_options</span>(<span class="at">margin_left =</span> <span class="dv">140</span>))</span></code></pre></div>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>                     <span class="at">type =</span> <span class="st">&quot;classification&quot;</span>,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>                     <span class="at">label =</span> <span class="st">&quot;xgboost&quot;</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># pick observations</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>new_observation <span class="ot">&lt;-</span> test_matrix[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, , drop<span class="ot">=</span><span class="cn">FALSE</span>]</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(new_observation) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;id1&quot;</span>, <span class="st">&quot;id2&quot;</span>)</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="co"># make a studio for the model</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">modelStudio</span>(explainer, new_observation)</span></code></pre></div>
 </div>
 <div id="caret-dashboard" class="section level3">
 <h3>caret <a href="https://modelstudio.drwhy.ai/caret.html">dashboard</a></h3>
-<p>In this example we will make a studio for the <code>gbm</code> model on <code>titanic</code> data.</p>
+<p>In this example, we make a studio for the <code>gbm</code> model on the <code>titanic</code> data.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages and data</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DALEX)</span>
@@ -297,7 +297,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="h2o-dashboard" class="section level3">
 <h3>h2o <a href="https://modelstudio.drwhy.ai/h2o.html">dashboard</a></h3>
-<p>In this example we will make a studio for the <code>h2o.automl</code> model on <code>titanic</code> data.</p>
+<p>In this example, we make a studio for the <code>h2o.automl</code> model on the <code>titanic</code> data.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages and data</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(h2o)</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DALEXtra)</span>
@@ -340,7 +340,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="parsnip-dashboard" class="section level3">
 <h3>parsnip <a href="https://modelstudio.drwhy.ai/parsnip.html">dashboard</a></h3>
-<p>In this example we will make a studio for the <code>ranger</code> model on <code>apartments</code> data.</p>
+<p>In this example, we make a studio for the <code>ranger</code> model on the <code>apartments</code> data.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages and data</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parsnip)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DALEX)</span>
@@ -370,7 +370,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="tidymodels-dashboard" class="section level3">
 <h3>tidymodels <a href="https://modelstudio.drwhy.ai/tidymodels.html">dashboard</a></h3>
-<p>In this example we will make a studio for the <code>ranger</code> model on <code>titanic</code> data.</p>
+<p>In this example, we make a studio for the <code>ranger</code> model on the <code>titanic</code> data.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages and data</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DALEXtra)</span>
@@ -424,7 +424,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;reticulate&quot;</span>)</span></code></pre></div>
 <div id="scikit-learn-dashboard" class="section level3">
 <h3>scikit-learn <a href="https://modelstudio.drwhy.ai/scikitlearn.html">dashboard</a></h3>
-<p>In this example we will make a studio for the <code>Pipeline SVR</code> model on <code>fifa</code> data.</p>
+<p>In this example, we make a studio for the <code>Pipeline SVR</code> model on the <code>fifa</code> data.</p>
 <p>First, use <code>dalex</code> in Python:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages and data</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dalex <span class="im">as</span> dx</span>
@@ -457,12 +457,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># make a studio for the model</span></span>
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(modelStudio)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="fu">modelStudio</span>(explainer, <span class="at">B =</span> <span class="dv">5</span>,</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">options =</span> <span class="fu">ms_options</span>(<span class="at">margin_left =</span> <span class="dv">160</span>))</span></code></pre></div>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="fu">modelStudio</span>(explainer, <span class="at">B =</span> <span class="dv">5</span>)</span></code></pre></div>
 </div>
 <div id="lightgbm-dashboard" class="section level3">
 <h3>lightgbm <a href="https://modelstudio.drwhy.ai/lightgbm.html">dashboard</a></h3>
-<p>In this example we will make a studio for the <code>Pipeline LGBMClassifier</code> model on <code>titanic</code> data.</p>
+<p>In this example, we make a studio for the <code>Pipeline LGBMClassifier</code> model on the <code>titanic</code> data.</p>
 <p>First, use <code>dalex</code> in Python:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages and data</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dalex <span class="im">as</span> dx</span>
@@ -529,7 +528,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="kerastensorflow-dashboard" class="section level3">
 <h3>keras/tensorflow <a href="https://modelstudio.drwhy.ai/keras.html">dashboard</a></h3>
-<p>In this example we will make a studio for the <code>Pipeline KerasClassifier</code> model on <code>titanic</code> data.</p>
+<p>In this example, we make a studio for the <code>Pipeline KerasClassifier</code> model on the <code>titanic</code> data.</p>
 <p>First, use <code>dalex</code> in Python:</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages and data</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dalex <span class="im">as</span> dx</span>

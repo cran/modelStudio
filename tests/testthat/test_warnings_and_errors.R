@@ -20,11 +20,19 @@ if (requireNamespace("xgboost", quietly=TRUE)) {
   })
 }
 
-testthat::test_that("deprecated modelStudioOptions", {
-  testthat::expect_warning(
+# deprecated since v1.1 (May 2020)
+# removed in v2.2 (July 2021)
+# testthat::test_that("deprecated modelStudioOptions", {
+#   testthat::expect_warning(
+#     ms <- modelStudio::modelStudioOptions()
+#   )
+# })
+testthat::test_that("removed modelStudioOptions", {
+  testthat::expect_error(
     ms <- modelStudio::modelStudioOptions()
   )
 })
+
 
 if (requireNamespace("ranger", quietly=TRUE)) {
   ms <- modelStudio::modelStudio(explain_rf, apartments[1:2,], N = 5, B = 2, show_info = v)

@@ -37,11 +37,13 @@
 #' @param N Number of observations used for the calculation of PD and AD. Default is \code{300}.
 #'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}
 #' @param N_fi Number of observations used for the calculation of FI. Default is \code{10*N}.
+#' @param N_sv Number of observations used for the calculation of SV. Default is \code{3*N}.
 #' @param B Number of permutation rounds used for calculation of SV. Default is \code{10}.
 #'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}
 #' @param B_fi Number of permutation rounds used for calculation of FI. Default is \code{B}.
 #' @param eda Compute EDA plots and Residuals vs Feature plot, which adds the data to the dashboard. Default is \code{TRUE}.
 #' @param show_info Verbose a progress on the console. Default is \code{TRUE}.
+#' @param verbose An alias for \code{show_info}. If provided, it will override the value.
 #' @param parallel Speed up the computation using \code{parallelMap::parallelMap()}.
 #'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#parallel-computation}{\bold{vignette}}.
 #'  This might interfere with showing progress using \code{show_info}.
@@ -148,6 +150,7 @@
 #'   explainer_HR <- explain(model_HR,
 #'                           data = HR_matrix,
 #'                           y = HR$status == "fired",
+#'                           type = "classification",
 #'                           label = "xgboost")
 #'
 #'   # pick observations
@@ -177,6 +180,7 @@ modelStudio.explainer <- function(explainer,
                                   max_features = 10,
                                   N = 300,
                                   N_fi = N*10,
+                                  N_sv = N*3,
                                   B = 10,
                                   B_fi = B,
                                   eda = TRUE,
@@ -188,6 +192,7 @@ modelStudio.explainer <- function(explainer,
                                   license = NULL,
                                   telemetry = TRUE,
                                   max_vars = NULL,
+                                  verbose = NULL,
                                   ...) {
 
   start_time <- Sys.time()
@@ -203,6 +208,7 @@ modelStudio.explainer <- function(explainer,
   model_type <- explainer$model_info$type
 
   if (!is.null(max_vars)) max_features <- max_vars
+  if (!is.null(verbose)) show_info <- verbose
   if (is.null(N)) stop("`N` argument must be an integer")
   #if (identical(N_fi, numeric(0))) N_fi <- NULL
 
@@ -262,6 +268,12 @@ modelStudio.explainer <- function(explainer,
   obs_count <- dim(new_observation)[1]
   obs_data <- new_observation
   obs_list <- list()
+  
+  if (!is.null(N_sv) && N_sv < nrow(data)) {
+    data_sv <- data[sample(1:nrow(data), N_sv),, drop = FALSE]
+  } else {
+    data_sv <- data
+  }
 
   ## later update progress bar after all explanation functions
   if (show_info) {
@@ -371,7 +383,7 @@ modelStudio.explainer <- function(explainer,
         paste0("iBreakDown::local_attributions (", i, ")      "), show_info, pb, 2)
       sv <- calculate(
         iBreakDown::shap(
-          model, data, predict_function, new_observation, label = label, B = B),
+          model, data_sv, predict_function, new_observation, label = label, B = B),
         paste0("iBreakDown::shap (", i, ")                    "), show_info, pb, 3*B)
       cp <- calculate(
         ingredients::ceteris_paribus(
@@ -411,7 +423,7 @@ modelStudio.explainer <- function(explainer,
         paste0("iBreakDown::local_attributions (", i, ")      "), show_info, pb, 2)
       sv <- calculate(
         iBreakDown::shap(
-          model, data, predict_function, new_observation, label = label, B = B),
+          model, data_sv, predict_function, new_observation, label = label, B = B),
         paste0("iBreakDown::shap (", i, ")                    "), show_info, pb, 3*B)
       cp <- calculate(
         ingredients::ceteris_paribus(
@@ -479,7 +491,8 @@ modelStudio.explainer <- function(explainer,
   if (!is.null(license)) options$license <- paste(readLines(license), collapse=" ")
   if (is.null(options$ms_title)) options$ms_title <- paste0("Interactive Studio for ", label, " Model")
   if (!is.null(options$ms_subtitle)) options$ms_margin_top <- options$ms_margin_top + 40
-
+  if (is.null(options$margin_left)) options$margin_left <- max(105, 7*max(nchar(variable_names)))
+  
   options <- c(list(time = time,
                     model_name = label,
                     variable_names = as.list(variable_names),

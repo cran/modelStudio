@@ -113,7 +113,7 @@ ms_options <- function(...) {
     margin_top = 50,
     margin_right = 20,
     margin_bottom = 70,
-    margin_left = 105,
+    margin_left = NULL, # 105,
     margin_inner = 40,
     margin_small = 5,
     margin_big = 10,
@@ -194,11 +194,12 @@ ms_options <- function(...) {
   default_options
 }
 
-#' deprecated since v1.1
+#' deprecated since v1.1 (May 2020)
+#' removed in v2.2 (July 2021)
 #' @export
 #' @rdname ms_options
-modelStudioOptions <- function(...) {
-  warning("The 'modelStudioOptions()' function is deprecated; use 'ms_options()' instead.")
-  ret <- ms_options(...)
-  ret
-}
+# modelStudioOptions <- function(...) {
+#   warning("The 'modelStudioOptions()' function is deprecated; use 'ms_options()' instead.")
+#   ret <- ms_options(...)
+#   ret
+# }

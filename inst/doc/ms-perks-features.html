@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hubert Baniecki" />
 
-<meta name="date" content="2021-04-20" />
+<meta name="date" content="2021-07-13" />
 
 <title>modelStudio - perks and features</title>
 
@@ -141,7 +141,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <h1 class="title toc-ignore">modelStudio - perks and features</h1>
 <h4 class="author">Hubert Baniecki</h4>
-<h4 class="date">2021-04-20</h4>
+<h4 class="date">2021-07-13</h4>
 
 
 
@@ -274,7 +274,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h3>more calculations means more time</h3>
 <ul>
 <li><code>N</code> is a number of observations used for calculation of <a href="https://ema.drwhy.ai/partialDependenceProfiles.html">Partial Dependence</a> and <a href="https://ema.drwhy.ai/accumulatedLocalProfiles.html">Accumulated Dependence</a> Profiles (default is <code>300</code>).</li>
-<li><code>N_fi</code> is a number of observations used for calculation of <a href="https://ema.drwhy.ai/featureImportance.html">Feature Importance</a> (default is <code>10*N</code>).</li>
+<li><code>N_fi</code> is a number of observations used for calculation of <a href="https://ema.drwhy.ai/featureImportance.html">Feature Importance</a> (default is <code>N*10</code>).</li>
+<li><code>N_sv</code> is a number of observations used for calculation of <a href="https://ema.drwhy.ai/shapley.html">Shapley Values</a> (default is <code>N*3</code>).</li>
 <li><code>B</code> is a number of permutation rounds used for calculation of <a href="https://ema.drwhy.ai/shapley.html">Shapley Values</a> (default is <code>10</code>).</li>
 <li><code>B_fi</code> is a number of permutation rounds used for calculation of <a href="https://ema.drwhy.ai/featureImportance.html">Feature Importance</a> (default is <code>B</code>).</li>
 </ul>

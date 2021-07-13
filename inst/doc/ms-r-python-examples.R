@@ -103,6 +103,7 @@ knitr::opts_chunk$set(
 #  explainer <- explain(model,
 #                       data = test_matrix,
 #                       y = test$survived,
+#                       type = "classification",
 #                       label = "xgboost")
 #  
 #  # pick observations
@@ -110,8 +111,7 @@ knitr::opts_chunk$set(
 #  rownames(new_observation) <- c("id1", "id2")
 #  
 #  # make a studio for the model
-#  modelStudio(explainer, new_observation,
-#              options = ms_options(margin_left = 140))
+#  modelStudio(explainer, new_observation)
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  # load packages and data
@@ -269,8 +269,7 @@ knitr::opts_chunk$set(
 #  
 #  # make a studio for the model
 #  library(modelStudio)
-#  modelStudio(explainer, B = 5,
-#              options = ms_options(margin_left = 160))
+#  modelStudio(explainer, B = 5)
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  # load the explainer from the pickle file
