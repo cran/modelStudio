@@ -31,8 +31,9 @@
 #'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#instance-explanations}{\bold{vignette}}
 #' @param facet_dim Dimensions of the grid. Default is \code{c(2,2)}.
 #' @param time Time in ms. Set the animation length. Default is \code{500}.
-#' @param max_features Maximum number of features to be included in BD and SV plots.
+#' @param max_features Maximum number of features to be included in BD, SV, and FI plots.
 #'  Default is \code{10}.
+#' @param max_features_fi Maximum number of features to be included in FI plot. Default is \code{max_features}.
 #' @param max_vars An alias for \code{max_features}. If provided, it will override the value.
 #' @param N Number of observations used for the calculation of PD and AD. Default is \code{300}.
 #'  See \href{https://modelstudio.drwhy.ai/articles/ms-perks-features.html#more-calculations-means-more-time}{\bold{vignette}}
@@ -178,6 +179,7 @@ modelStudio.explainer <- function(explainer,
                                   facet_dim = c(2,2),
                                   time = 500,
                                   max_features = 10,
+                                  max_features_fi = NULL,
                                   N = 300,
                                   N_fi = N*10,
                                   N_sv = N*3,
@@ -208,6 +210,7 @@ modelStudio.explainer <- function(explainer,
   model_type <- explainer$model_info$type
 
   if (!is.null(max_vars)) max_features <- max_vars
+  if (is.null(max_features_fi)) max_features_fi <- max_features
   if (!is.null(verbose)) show_info <- verbose
   if (is.null(N)) stop("`N` argument must be an integer")
   #if (identical(N_fi, numeric(0))) N_fi <- NULL
@@ -347,9 +350,8 @@ modelStudio.explainer <- function(explainer,
         variable_splits_type=variable_splits_type),
       "ingredients::accumulated_dependence (categorical)", show_info, pb, N/30)
   }
-
-  fi_data <- prepare_feature_importance(fi, max_features, options$show_boxplot,
-                                        attr(loss_function, "loss_name"), ...)
+  
+  fi_data <- prepare_feature_importance(fi, max_features_fi, options$show_boxplot, ...)
   pd_data <- prepare_partial_dependence(pd_n, pd_c, variables = variable_names)
   ad_data <- prepare_accumulated_dependence(ad_n, ad_c, variables = variable_names)
   mp_ret <- calculate(
@@ -492,6 +494,8 @@ modelStudio.explainer <- function(explainer,
   if (is.null(options$ms_title)) options$ms_title <- paste0("Interactive Studio for ", label, " Model")
   if (!is.null(options$ms_subtitle)) options$ms_margin_top <- options$ms_margin_top + 40
   if (is.null(options$margin_left)) options$margin_left <- max(105, 7*max(nchar(variable_names)))
+  if (is.null(options$fi_axis_title)) options$fi_axis_title <- 
+    ifelse(is.null(attr(loss_function, "loss_name")), "drop-out loss", attr(loss_function, "loss_name"))
   
   options <- c(list(time = time,
                     model_name = label,
