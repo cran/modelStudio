@@ -1,3 +1,7 @@
+# modelStudio 3.1.2
+* added new parameter to `modelStudio()`: `open_plots = c("fi")`, which is a vector listing plots to be initially opened (and on which positions) [(#112)](https://github.com/ModelOriented/modelStudio/issues/112)
+* fixed future warning with `DALEX::loss_default()` since `DALEX >=2.5.0`
+
 # modelStudio 3.1.0
 * changed y-axis variable labels in `SV` to the same as in `BD`
 * added new parameter to `modelStudio()`: `max_features_fi = max_features`, which allows displaying a distinctive number of features in `FI` plot (other than in `BD` and `SV`)
